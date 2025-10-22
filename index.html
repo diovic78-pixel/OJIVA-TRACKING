@@ -8,7 +8,6 @@
   <style>
     html, body { height: 100%; margin: 0; font-family: Inter, Arial; background: #f3f4f6; color: #0f172a; padding: 18px;}
     .container { max-width: 1200px; margin: 0 auto;}
-    h1 { margin: 0 0 12px; font-size: 20px;}
     .card { background: #fff; border-radius: 8px; padding: 12px; box-shadow: 0 1px 4px rgba(2,6,23,.08); margin-bottom: 12px;}
     label { display: block; font-size: 13px; color: #54627a; margin-bottom: 6px;}
     input, select, textarea { width: 100%; padding: 8px; border: 1px solid #e6e9ef; border-radius: 6px; font-size: 14px;}
@@ -29,18 +28,18 @@
 </head>
 <body>
 <div class="container">
-  <h1>Plantilla avanzada - Tracking de descarga Buques a granel</h1>
+  <h1>Tracking descarga Buques a granel</h1>
   <div class="card">
     <strong>Ficha general</strong>
-    <div class="muted">Complete los datos generales del buque.</div>
+    <div class="muted">Datos generales del buque.</div>
     <div class="grid-3">
-      <div><label>Nombre del buque</label><input id="vessel" placeholder="ULTRA YORKSHIRE"></div>
+      <div><label>Nombre del buque</label><input id="vessel"></div>
       <div><label>PRESENTACIÓN NOR Fecha - Hora</label><input id="nor" type="datetime-local"></div>
       <div><label>ETA Fecha - Hora</label><input id="eta" type="datetime-local"></div>
     </div>
     <div class="grid-3" style="margin-top:8px;">
-      <div><label>Inicio de operaciones Fecha - Hora</label><input id="startOp" type="datetime-local"></div>
-      <div><label>Fin de operaciones Fecha - Hora</label><input id="endOp" type="datetime-local"></div>
+      <div><label>Inicio de operaciones</label><input id="startOp" type="datetime-local"></div>
+      <div><label>Fin de operaciones</label><input id="endOp" type="datetime-local"></div>
       <div><label>Observaciones generales</label><input id="obsGeneral"></div>
     </div>
     <div class="controls" style="margin-top:10px;">
@@ -49,116 +48,84 @@
       <span class="muted" style="margin-left:auto;">* campos obligatorios</span>
     </div>
   </div>
-  <!-- ... Omitido: igual a versiones anteriores para productos manifestados/descargados/incidentes/sindicato ...-->
-
   <div class="card">
-    <strong>Dashboard y Resumen ejecutivo</strong>
-    <div class="dash-group" style="margin-top:14px;">
-      <div class="dash-cant">
-        <strong>Cantidades por producto</strong>
-        <table class="dash-cant-table" id="dashCantTable">
-          <thead>
-            <tr>
-              <th>Producto</th>
-              <th>Manifestado</th>
-              <th>Descargado</th>
-              <th>Pendiente</th>
-              <th>% Desc.</th>
-              <th>% Pend.</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-        <div style="margin-top:8px;">
-          <strong>Total manifestado:</strong> <span id="dashTotalManifest">0</span> TM |
-          <strong>Total descargado:</strong> <span id="dashTotalDescargado">0</span> TM |
-          <strong>Total pendiente:</strong> <span id="dashTotalPendiente">0</span> TM
-        </div>
-      </div>
-      <div class="dash-time">
-        <strong>Resumen tiempos</strong>
-        <div style="margin:5px 0 0 0;">
-          <strong>Bruto (inicio a fin):</strong>
-          <span id="dashTotalOpTime"></span>
-        </div>
-        <div style="margin:6px 0 0 0;">
-          <strong>Total paradas:</strong>
-          <span id="dashDowntime">0</span> min
-        </div>
-        <div style="margin:6px 0 0 0;">
-          <strong>Tiempo neto operativo:</strong>
-          <span id="dashTimeNeto">0</span> min
-        </div>
-        <div style="margin:6px 0 0 0;">
-          Filtrar por motivo: 
-          <select id="dashFilterReason" onchange="updateAll()">
-            <option value="Todos">Todos</option>
-            <option value="lluvia">Lluvia</option>
-            <option value="movimiento buque">Movimiento Buque</option>
-            <option value="paro por mecanizado">Paro por mecanizado</option>
-            <option value="falta camiones">Falta camiones</option>
-            <option value="problemas buque interno">Problemas buque interno</option>
-            <option value="otros">Otros</option>
-          </select>
-        </div>
-      </div>
+    <strong>Productos manifestados</strong>
+    <div class="grid-2" style="margin-top:8px;">
+      <div><label>Producto</label><input id="prodNameM"></div>
+      <div><label>Cantidad manifestada TM</label><input id="prodManifest" type="number" step="0.01"></div>
     </div>
+    <div class="controls" style="margin-top:8px;">
+      <button onclick="addProductManifest()">Agregar producto manifestado</button>
+      <button onclick="exportProductsMCSV()" style="background:#111827;">Exportar manifestados CSV</button>
+      <span class="muted" style="margin-left:auto;">Total manifestados: <span id="prodMCount">0</span></span>
+    </div>
+    <table id="prodMTable">
+      <thead>
+        <tr><th>#</th><th>Producto</th><th>Manifestado (TM)</th><th>Pendiente (TM)</th><th>Acciones</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
   </div>
-</div>
-<footer class="muted" style="text-align:center;margin-top:20px;">Plantilla avanzada v2025.</footer>
-<script>
-const DBKEY = 'trackingdescarga_git';
-let state = {header:{},prodManifestados:[],prodDescargados:[],incidents:[],sindicato:[]};
-window.onload = function(){const raw = localStorage.getItem(DBKEY);if(raw)state=JSON.parse(raw);updateAll();}
-function saveState(){localStorage.setItem(DBKEY,JSON.stringify(state));}
-function saveHeader(){/* igual a antes, luego: */ saveState();updateAll();}
-function updateAll(){
-  renderProductsManifest();
-  renderProductsDownloaded();
-  renderIncidents();
-  renderSindicato();
-  renderDashboardAndSummary();
-}
-function renderProductsManifest(){/* igual a antes */}
-function renderProductsDownloaded(){/* igual a antes */}
-function renderIncidents(){/* igual a antes, pero llama updateAll al eliminar/agregar */}
-function renderSindicato(){/* igual a antes */}
-function renderDashboardAndSummary(){
-  // --- Cantidades por producto
-  let tb=document.querySelector("#dashCantTable tbody");tb.innerHTML='';
-  let prodNames=[...new Set(state.prodManifestados.map(m=>m.name).concat(state.prodDescargados.map(d=>d.name)))];
-  let totalM=0,totalD=0,totalP=0;
-  prodNames.forEach(n=>{
-    let m=state.prodManifestados.filter(p=>p.name===n).reduce((s,p)=>s+p.manifest,0);
-    let d=state.prodDescargados.filter(p=>p.name===n).reduce((s,p)=>s+p.downloaded,0);
-    let p=Math.max(m-d,0);
-    totalM+=m; totalD+=d; totalP+=p;
-    let pctD=d>0?100*(d/m):0,pctP=100-pctD;
-    let tr=document.createElement('tr');tr.innerHTML=`<td>${n}</td><td>${m.toFixed(2)}</td><td>${d.toFixed(2)}</td><td>${p.toFixed(2)}</td><td>${pctD.toFixed(1)}%</td><td>${pctP.toFixed(1)}%</td>`;
-    tb.appendChild(tr);
-  });
-  document.getElementById("dashTotalManifest").innerText=totalM.toFixed(2);
-  document.getElementById("dashTotalDescargado").innerText=totalD.toFixed(2);
-  document.getElementById("dashTotalPendiente").innerText=totalP.toFixed(2);
-
-  // --- Tiempos
-  let h=state.header;
-  let opMin=h.startOp&&h.endOp?Math.round((new Date(h.endOp)-(new Date(h.startOp)))/60000):0;
-  document.getElementById('dashTotalOpTime').innerText = opMin>0?(Math.floor(opMin/60)+":"+String(opMin%60).padStart(2,"0")):'--';
-
-  let motive=document.getElementById("dashFilterReason").value;
-  let downs=motive==="Todos"?state.incidents:state.incidents.filter(i=>i.reason===motive);
-  let downTime=downs.reduce((s,i)=>s+i.minutes,0);
-  document.getElementById('dashDowntime').innerText=downTime;
-  document.getElementById('dashTimeNeto').innerText = opMin>0?(opMin-downTime):'--';
-}
-function downloadCSV(rows,filename){
-  let csv=rows.map(r=>r.map(c=>String(c).replace(/"/g,'""')).join(",")).join("\n");
-  const blob=new Blob([csv],{type:"text/csv"});
-  const a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);a.download=filename;a.click();
-}
-// Las funciones de agregar/eliminar/actualizar llaman a updateAll() al final.
-</script>
-</body>
-</html>
+  <div class="card">
+    <strong>Productos descargados</strong>
+    <div class="grid-2" style="margin-top:8px;">
+      <div><label>Producto</label><input id="prodNameD"></div>
+      <div><label>Cantidad descargada TM</label><input id="prodDownloaded" type="number" step="0.01"></div>
+    </div>
+    <div class="controls" style="margin-top:8px;">
+      <button onclick="addProductDownloaded()">Agregar producto descargado</button>
+      <button onclick="exportProductsDCSV()" style="background:#111827;">Exportar descargados CSV</button>
+      <span class="muted" style="margin-left:auto;">Total descargados: <span id="prodDCount">0</span></span>
+    </div>
+    <table id="prodDTable">
+      <thead>
+        <tr><th>#</th><th>Producto</th><th>Descargado (TM)</th><th>Acciones</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <div class="card">
+    <strong>Registro de paradas (incidentes)</strong>
+    <div class="col" style="margin-top:8px;max-width:380px;">
+      <label>Motivo</label>
+      <select id="incReason">
+        <option value="lluvia">Lluvia</option>
+        <option value="movimiento buque">Movimiento Buque</option>
+        <option value="paro por mecanizado">Paro por mecanizado</option>
+        <option value="falta camiones">Falta camiones</option>
+        <option value="problemas buque interno">Problemas buque interno</option>
+        <option value="otros">Otros</option>
+      </select>
+      <label>Bodega afectada</label>
+      <select id="incBodega">
+        <option value="Bodega 1">Bodega 1</option>
+        <option value="Bodega 2">Bodega 2</option>
+        <option value="Buque completo">Buque completo</option>
+      </select>
+      <button onclick="inicioIncidente()">Inicio incidente</button>
+      <button onclick="finIncidente()">Fin incidente</button>
+      <button onclick="exportIncidentsCSV()" style="background:#111827;">Exportar CSV</button>
+    </div>
+    <div class="row">
+      <strong>Tiempo total de paradas: <span id="statDowntime">0</span> min</strong>
+      <span>
+        Filtrar motivo:
+        <select id="filterReason" onchange="updateAll()">
+          <option value="Todos">Todos</option>
+          <option value="lluvia">Lluvia</option>
+          <option value="movimiento buque">Movimiento Buque</option>
+          <option value="paro por mecanizado">Paro por mecanizado</option>
+          <option value="falta camiones">Falta camiones</option>
+          <option value="problemas buque interno">Problemas buque interno</option>
+          <option value="otros">Otros</option>
+        </select>
+        <strong style="margin-left:10px;">Total motivo: <span id="statDowntimeFilter">0</span> min</strong>
+      </span>
+    </div>
+    <table id="incTable">
+      <thead>
+        <tr><th>#</th><th>Inicio</th><th>Fin</th><th>Minutos</th><th>Motivo</th><th>Bodega</th><th>Acciones</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
