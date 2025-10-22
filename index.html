@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Tracking Operación de Descarga - Plantilla Avanzada</title>
+  <title>Tracking Ojiva-Buques</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     html, body {margin: 0; font-family: Inter, Arial, sans-serif; background: #f3f4f6; color: #0f172a; padding: 18px;}
@@ -38,11 +38,10 @@
       <option value="TODOS">Todos</option>
     </select>
   </div>
-  <canvas id="mainChart" height="180"></canvas>
+  <canvas id="mainChart" width="300" height="180"></canvas>
 </div>
 <div class="container">
-  <h1>Tracking descarga Buques a granel</h1>
-  <!-- FICHA GENERAL -->
+  <h1>Tracking Ojiva-Buques</h1>
   <div class="card">
     <strong>Ficha general</strong>
     <div class="grid-3" style="margin-top:8px;">
@@ -54,6 +53,26 @@
       <div><label>Inicio de operaciones</label><input id="startOp" type="datetime-local"/></div>
       <div><label>Fin de operaciones</label><input id="endOp" type="datetime-local"/></div>
       <div><label>Observaciones generales</label><input id="obsGeneral"/></div>
+    </div>
+    <div class="grid-3" style="margin-top:8px;">
+      <div><label>Rata contratada (TM/día)</label><input id="rataContratada" type="number" step="0.01" min="0"/></div>
+      <div><label>Condición</label>
+        <select id="condicion">
+          <option value="SHINC">SHINC</option>
+          <option value="SHEX">SHEX</option>
+        </select>
+      </div>
+      <div><label>Inicio Laytime (Fecha y hora)</label><input id="inicioLaytime" type="datetime-local"/></div>
+    </div>
+    <div class="grid-2" style="margin-top:4px;">
+      <div>
+        <label>Tiempo Hábil (laytime permitido)</label>
+        <input id="tiempoHabil" readonly style="background:#f3f4f6; border:1.5px dashed #bcbcbc;"/>
+      </div>
+      <div>
+        <button onclick="calcularLaytime()">Calcular laytime contrato</button>
+        <span id="tiempoHabilDetalle" class="muted"></span>
+      </div>
     </div>
     <div style="margin-top:8px; display:flex; align-items:center;">
       <button onclick="saveHeader()">Guardar ficha</button>
@@ -205,7 +224,7 @@
           <option value="Cargado">Cargado</option>
           <option value="No Cargado">No Cargado</option>
         </select>
-        <span id="sindBodegaBox" style="display:inline;"></span>
+        <span id="sindBodegaBox"></span>
         <button onclick="addSindicato()">Agregar</button>
         <input type="file" id="sindImport" accept=".csv" onchange="importSindicatoCSV()" style="margin-top:6px;" />
       </div>
@@ -276,26 +295,74 @@
   </div>
 </div>
 <script>
+const feriadosRD2025 = [
+ "2025-01-01","2025-01-06","2025-01-21","2025-01-26","2025-02-27","2025-03-24","2025-04-18","2025-05-01","2025-05-30","2025-06-03","2025-08-16","2025-09-24","2025-12-25"
+];
 let state = {header:{},prodManifestados:[],prodDescargados:[],incidents:[],sindicato:[]};
 const DBKEY = 'trackingdescarga_prod_bod_dashboard';
 const PW_AUTORIZA = "AUTORIZADO2025";
-window.onload = function() {
-  const raw = localStorage.getItem(DBKEY); if(raw) state = JSON.parse(raw);
-  toggleSindBodegaInput();
-  updateAll();
-};
+window.onload = function() {const raw = localStorage.getItem(DBKEY); if(raw) state = JSON.parse(raw); toggleSindBodegaInput(); updateAll();}
 function saveState() { localStorage.setItem(DBKEY,JSON.stringify(state)); }
 function saveHeader() {
-  state.header = { vessel:document.getElementById('vessel').value.trim(),
+  state.header = {
+    vessel: document.getElementById('vessel').value.trim(),
     nor:document.getElementById('nor').value,
     eta:document.getElementById('eta').value,
     startOp:document.getElementById('startOp').value,
     endOp:document.getElementById('endOp').value,
-    obs:document.getElementById('obsGeneral').value
+    obs:document.getElementById('obsGeneral').value,
+    rata: parseFloat(document.getElementById('rataContratada').value||0),
+    condicion: document.getElementById('condicion').value,
+    inicioLaytime: document.getElementById('inicioLaytime').value
   };
   saveState(); updateAll();
 }
-function updateAll() { renderProductsManifest(); renderProductsDownloaded(); renderIncidents(); renderSindicato(); renderDashboard(); renderChart(); }
+function calcularLaytime() {
+  let total = getTotalManifestadoGlobal();
+  let rata = parseFloat(document.getElementById('rataContratada').value || 0);
+  let condicion = document.getElementById('condicion').value;
+  let inicioLay = document.getElementById('inicioLaytime').value;
+  if (total === 0 || rata === 0 || !inicioLay) {
+    document.getElementById('tiempoHabil').value = "";
+    document.getElementById('tiempoHabilDetalle').innerText = "Faltan datos o rata/laytime es 0";
+    return;
+  }
+  let diasLaytimeExacto = total / rata;
+  let fechaInicioLay = new Date(inicioLay);
+  let minHabil = Math.floor(diasLaytimeExacto*24*60);
+  let diasSumar = 0;
+  if(condicion==="SHEX") {
+    let fechaFin = new Date(fechaInicioLay.getTime() + (minHabil*60000));
+    let extras = contarDiasDomingoFeriado(fechaInicioLay,fechaFin);
+    diasSumar = extras;
+    minHabil += extras*24*60;
+  }
+  let minLluvia = getMinutosParadaLluviaDesde(fechaInicioLay);
+  minHabil += minLluvia;
+  let dias = Math.floor(minHabil/1440);
+  let horas = Math.floor((minHabil%1440)/60);
+  let mins = minHabil%60;
+  document.getElementById('tiempoHabil').value = `${dias} días, ${horas}h, ${mins}m`;
+  let detalles = `(Incluye SHEX: ${diasSumar}d, lluvia: ${Math.round(minLluvia/60)}h)`;
+  document.getElementById('tiempoHabilDetalle').innerText = detalles;
+}
+function contarDiasDomingoFeriado(fecha1,fecha2){
+  let count = 0;
+  for(let d=new Date(fecha1);d<=fecha2;d.setDate(d.getDate()+1)){
+    let iso=d.toISOString().slice(0,10);
+    if(d.getDay()===0 || feriadosRD2025.indexOf(iso)>=0) count++;
+  }
+  return count;
+}
+function getMinutosParadaLluviaDesde(desdeFecha){
+  let desdeT=desdeFecha.getTime();
+  return (state.incidents||[]).filter(i=>i.reason==="lluvia"&&new Date(i.start)>=desdeT)
+            .reduce((s,i)=>s+(i.minutes||0),0);
+}
+function getTotalManifestadoGlobal(){
+  return state.prodManifestados.reduce((s,x)=>s+(x.manifest||0),0);
+}
+function updateAll() { renderProductsManifest(); renderProductsDownloaded(); renderIncidents(); renderSindicato(); renderDashboard(); renderChart();}
 function addProductManifest() {
   const name=document.getElementById('prodNameM').value;
   const bodega=document.getElementById('prodBodegaM').value.trim().toUpperCase();
@@ -347,16 +414,12 @@ function addProductDownloaded() {
   const downloaded=parseFloat(document.getElementById('prodDownloaded').value||0);
   if(!name || !bodega) {alert('Producto y bodega obligatorios'); return;}
   if(downloaded<=0) {alert('Cantidad descargada inválida'); return;}
-  // Control para autorizar sobre-manifiesto
   const totalManifestado=getTotalManifestado(name,bodega);
   const totalDescargadoPrevio=getTotalDescargado(name,bodega);
   if(totalManifestado<(downloaded+totalDescargadoPrevio)) {
     const resto=(downloaded+totalDescargadoPrevio)-totalManifestado;
     let clave=prompt("Descargado excede lo manifestado por "+resto+" TM. Ingresa clave de autorización:");
-    if(clave!==PW_AUTORIZA) {
-      alert("No autorizado. Contacte supervisor.");
-      return;
-    }
+    if(clave!==PW_AUTORIZA) {alert("No autorizado. Contacte supervisor."); return;}
   }
   state.prodDescargados.push({id:Date.now(),name,bodega,downloaded});
   saveState(); renderProductsDownloaded(); renderDashboard(); renderChart();
@@ -510,7 +573,16 @@ function renderSindicato() {
   document.getElementById('totalNoCargados').innerText = totalNoCargados;
   list.forEach((s, idx) => {
     let bodegaHtml='';
-    if(s.estatus==="Cargado")bodegaHtml=s.bodega?`Bodega ${s.bodega}`:'';
+    if(s.estatus==="Cargado") {
+      bodegaHtml = `<select onchange="updateSindBodega('${s.id}',this.value)">
+        <option value="1"${s.bodega=="1"?" selected":""}>1</option>
+        <option value="2"${s.bodega=="2"?" selected":""}>2</option>
+        <option value="3"${s.bodega=="3"?" selected":""}>3</option>
+        <option value="4"${s.bodega=="4"?" selected":""}>4</option>
+        <option value="5"${s.bodega=="5"?" selected":""}>5</option>
+        <option value="6"${s.bodega=="6"?" selected":""}>6</option>
+      </select>`;
+    }
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td>${idx + 1}</td>
@@ -529,6 +601,13 @@ function renderSindicato() {
     `;
     tbody.appendChild(tr);
   });
+}
+function updateSindBodega(id,val){
+  let idx=state.sindicato.findIndex(s=>s.id==id);
+  if(idx>-1) {
+    state.sindicato[idx].bodega=val;
+    saveState();renderSindicato();
+  }
 }
 function updateEstatusSindicato(id, val) {
   let idx = state.sindicato.findIndex(s => s.id == id);
@@ -582,31 +661,36 @@ function renderDashboard() {
   let downTime=downs.reduce((s,i)=>s+i.minutes,0);
   document.getElementById('dashDowntime').innerText=downTime;
   document.getElementById('dashTimeNeto').innerText = opMinutes>0?(opMinutes-downTime):'--';
-  // Opciones chart
   const sel=document.getElementById('chartProd');
   let allProds=[...new Set(Object.keys(agrupadoM).concat(Object.keys(agrupadoD)).map(x=>x.split('|')[0]))];
   sel.innerHTML='<option value="TODOS">Todos</option>'+allProds.map(x=>`<option value="${x}">${x}</option>`).join('');
 }
 let chartObj=null;
 function renderChart() {
-  let ctx=document.getElementById('mainChart').getContext('2d');
-  let prod=document.getElementById('chartProd').value;
-  let dataM=0,dataD=0,dataP=0;
-  let agrupadoM={}, agrupadoD={};
-  state.prodManifestados.forEach(x=>{if(prod==="TODOS"||x.name===prod){let k=x.name+"|"+x.bodega;if(!agrupadoM[k])agrupadoM[k]=0;agrupadoM[k]+=x.manifest;}});
-  state.prodDescargados.forEach(x=>{if(prod==="TODOS"||x.name===prod){let k=x.name+"|"+x.bodega;if(!agrupadoD[k])agrupadoD[k]=0;agrupadoD[k]+=x.downloaded;}});
-  Object.keys(agrupadoM).forEach(k=>{dataM+=agrupadoM[k]; dataD+=(agrupadoD[k]||0);});
+  let ctx = document.getElementById('mainChart').getContext('2d');
+  let prod = document.getElementById('chartProd').value;
+  let dataM = 0, dataD = 0, dataP = 0;
+  let agrupadoM = {}, agrupadoD = {};
+  state.prodManifestados.forEach(x => {if (prod === "TODOS" || x.name === prod) {let k = x.name + "|" + x.bodega;if (!agrupadoM[k]) agrupadoM[k] = 0;agrupadoM[k] += x.manifest;}});
+  state.prodDescargados.forEach(x => {if (prod === "TODOS" || x.name === prod) {let k = x.name + "|" + x.bodega;if (!agrupadoD[k]) agrupadoD[k] = 0;agrupadoD[k] += x.downloaded;}});
+  Object.keys(agrupadoM).forEach(k => {dataM += agrupadoM[k];dataD += (agrupadoD[k] || 0);});
   dataP = dataM-dataD;
-  if(chartObj)chartObj.destroy();
-  chartObj=new Chart(ctx,{
-    type:'doughnut',
-    data:{
+  if(window.chartObj) window.chartObj.destroy();
+  window.chartObj = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
       labels:["Manifestado","Descargado","Pendiente"],
-      datasets:[{label:prod,backgroundColor:["#099","purple","#f8b347"],data:[dataM,dataD,dataP]}]
+      datasets: [{
+        label:prod,
+        backgroundColor:["#099","purple","#f8b347"],
+        borderColor:["#fff","#fff","#fff"],
+        borderWidth:2,
+        data:[dataM,dataD,dataP]
+      }]
     },
-    options:{
+    options: {
       aspectRatio:2,
-      plugins:{legend:{display:true,position:"bottom"}},
+      plugins:{legend:{display:true,position:"bottom"},tooltip:{enabled:true}},
       animation:{duration:500}
     }
   });
