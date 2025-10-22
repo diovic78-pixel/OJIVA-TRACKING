@@ -38,7 +38,7 @@
       <option value="TODOS">Todos</option>
     </select>
   </div>
-  <canvas id="mainChart" height="180"></canvas>
+  nvas id="mainChart" height="180180"></canvas>
 </div>
 <div class="container">
   <h1>Tracking descarga Buques a granel</h1>
@@ -65,7 +65,22 @@
   <div class="card manifestado">
     <strong>Productos manifestados</strong>
     <div class="grid-2" style="margin-top:8px;">
-      <div><label>Producto</label><input id="prodNameM"/></div>
+      <div>
+        <label>Producto</label>
+        <select id="prodNameM">
+          <option value="">Seleccione...</option>
+          <option>MAIZ AMERICANO</option>
+          <option>MAIZ BRASILENO</option>
+          <option>MAIZ ARGENTINO</option>
+          <option>HARINA DE SOYA AMERICANA</option>
+          <option>HARINA DE SOYA SURAMERICANA</option>
+          <option>DNS</option>
+          <option>HRW</option>
+          <option>SRW</option>
+          <option>FRIJOL</option>
+          <option>CASCARILLA</option>
+        </select>
+      </div>
       <div><label>Bodega</label><input id="prodBodegaM"/></div>
     </div>
     <div class="grid-2" style="margin-top:4px;">
@@ -88,7 +103,22 @@
   <div class="card descargado">
     <strong>Productos descargados</strong>
     <div class="grid-2" style="margin-top:8px;">
-      <div><label>Producto</label><input id="prodNameD"/></div>
+      <div>
+        <label>Producto</label>
+        <select id="prodNameD">
+          <option value="">Seleccione...</option>
+          <option>MAIZ AMERICANO</option>
+          <option>MAIZ BRASILENO</option>
+          <option>MAIZ ARGENTINO</option>
+          <option>HARINA DE SOYA AMERICANA</option>
+          <option>HARINA DE SOYA SURAMERICANA</option>
+          <option>DNS</option>
+          <option>HRW</option>
+          <option>SRW</option>
+          <option>FRIJOL</option>
+          <option>CASCARILLA</option>
+        </select>
+      </div>
       <div><label>Bodega</label><input id="prodBodegaD"/></div>
     </div>
     <div class="grid-2" style="margin-top:4px;">
@@ -247,6 +277,7 @@
 <script>
 let state = {header:{},prodManifestados:[],prodDescargados:[],incidents:[],sindicato:[]};
 const DBKEY = 'trackingdescarga_prod_bod_dashboard';
+const PW_AUTORIZA = "AUTORIZADO2025";
 window.onload = function() {
   const raw = localStorage.getItem(DBKEY); if(raw) state = JSON.parse(raw);
   updateAll();
@@ -264,7 +295,7 @@ function saveHeader() {
 }
 function updateAll() { renderProductsManifest(); renderProductsDownloaded(); renderIncidents(); renderSindicato(); renderDashboard(); renderChart(); }
 function addProductManifest() {
-  const name=document.getElementById('prodNameM').value.trim().toUpperCase();
+  const name=document.getElementById('prodNameM').value;
   const bodega=document.getElementById('prodBodegaM').value.trim().toUpperCase();
   const manifest=parseFloat(document.getElementById('prodManifest').value||0);
   if(!name || !bodega) {alert('Producto y bodega obligatorios'); return;}
@@ -286,10 +317,14 @@ function renderProductsManifest() {
     let pendiente = manifest-descargado;
     const tr=document.createElement('tr');
     tr.innerHTML=`<td>${idx+1}</td><td>${prod}</td><td>${bod}</td><td>${manifest.toFixed(2)}</td><td>${pendiente.toFixed(2)}</td>
-    <td><button onclick="delProductManifest('${prod}','${bod}')">Eliminar</button></td>`
+    <td><button onclick="delProductManifest('${prod}','${bod}')">Eliminar</button></td>`;
     tbody.appendChild(tr);
   });
   document.getElementById('prodMCount').innerText=rows.length;
+}
+function getTotalManifestado(prod,bod) {
+  return state.prodManifestados.filter(x=>x.name===prod&&x.bodega===bod)
+    .reduce((s,p)=>s+p.manifest,0);
 }
 function getTotalDescargado(prod,bod) {
   return state.prodDescargados.filter(x=>x.name===prod&&x.bodega===bod)
@@ -305,11 +340,22 @@ function exportProductsMCSV() {
   downloadCSV(rows,"manifestados.csv");
 }
 function addProductDownloaded() {
-  const name=document.getElementById('prodNameD').value.trim().toUpperCase();
+  const name=document.getElementById('prodNameD').value;
   const bodega=document.getElementById('prodBodegaD').value.trim().toUpperCase();
   const downloaded=parseFloat(document.getElementById('prodDownloaded').value||0);
   if(!name || !bodega) {alert('Producto y bodega obligatorios'); return;}
   if(downloaded<=0) {alert('Cantidad descargada inválida'); return;}
+  // Control para autorizar sobre-manifiesto
+  const totalManifestado=getTotalManifestado(name,bodega);
+  const totalDescargadoPrevio=getTotalDescargado(name,bodega);
+  if(totalManifestado<(downloaded+totalDescargadoPrevio)) {
+    const resto=(downloaded+totalDescargadoPrevio)-totalManifestado;
+    let clave=prompt("Descargado excede lo manifestado por "+resto+" TM. Ingresa clave de autorización:");
+    if(clave!==PW_AUTORIZA) {
+      alert("No autorizado. Contacte supervisor.");
+      return;
+    }
+  }
   state.prodDescargados.push({id:Date.now(),name,bodega,downloaded});
   saveState(); renderProductsDownloaded(); renderDashboard(); renderChart();
   document.getElementById('prodNameD').value=''; document.getElementById('prodDownloaded').value=''; document.getElementById('prodBodegaD').value='';
@@ -481,7 +527,6 @@ function delSindicato(id) {
   saveState();
   renderSindicato();
 }
-// DASHBOARD Y CHART
 function renderDashboard() {
   let agrupadoM={}, agrupadoD={};
   state.prodManifestados.forEach(x=>{
@@ -510,7 +555,7 @@ function renderDashboard() {
   });
   document.getElementById('dashTotalManifest').innerText = totalM.toFixed(2);
   document.getElementById('dashTotalDescargado').innerText = totalD.toFixed(2);
-  document.getElementById('dashTotalPendiente').innerText = totalP.toFixed(2);
+  document.getElementById('dashTotalPendiente').innerText = (totalM-totalD).toFixed(2);
   let h=state.header;
   let opMinutes=h.startOp&&h.endOp?Math.round((new Date(h.endOp)-(new Date(h.startOp)))/60000):0;
   document.getElementById('dashTotalOpTime').innerText=opMinutes>0?(Math.floor(opMinutes/60)+":"+String(opMinutes%60).padStart(2,"0")):'--';
@@ -544,7 +589,7 @@ function renderChart() {
     options:{
       indexAxis:'y',
       borderRadius:6,
-      plugins:{legend: {display:false}},
+      plugins:{legend:{display:false}},
       scales:{x:{beginAtZero:true},y:{beginAtZero:true}},
       animation:{duration:500},
       elements: { bar: {borderSkipped:false, borderWidth:2, borderColor:'#fff'}}
