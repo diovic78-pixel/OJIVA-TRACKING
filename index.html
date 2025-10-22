@@ -1,118 +1,107 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Tracking Operación de Descarga - Plantilla Avanzada</title>
-  <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <style>
-    html, body { height: 100%; margin: 0; font-family: Inter, Arial; background: #f3f4f6; color: #0f172a; padding: 18px;}
-    .container { max-width: 1200px; margin: 0 auto;}
-    h1 { margin: 0 0 12px; font-size: 20px;}
-    .card { background: #fff; border-radius: 8px; padding: 12px; box-shadow: 0 1px 4px rgba(2,6,23,.08); margin-bottom: 12px;}
-    label { display: block; font-size: 13px; color: #54627a; margin-bottom: 6px;}
-    input, select, textarea { width: 100%; padding: 8px; border: 1px solid #e6e9ef; border-radius: 6px; font-size: 14px;}
-    button { background: #06b6d4; color: white; padding: 8px 10px; border: 0; border-radius: 6px; cursor: pointer;}
-    .grid-2 { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px;}
-    .grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px;}
-    .muted { color: #6b7280; font-size: 13px;}
-    .controls { display: flex; gap: 8px; align-items: center;}
-    .row { display: flex; align-items: center; gap: 18px; margin-top: 8px;}
-    .col { display: flex; flex-direction: column; gap: 6px;}
-    .dash-group { display: flex; gap:24px; margin-bottom:18px;}
-    .dash-cant { background: #e6f0ff; border-radius:10px; padding:18px; flex:2 1 0;}
-    .dash-time { background: #ece2fe; border-radius:10px; padding:18px; flex:1 1 0;}
-    table.dash-cant-table { width:100%; margin-top:10px; border-collapse:collapse;}
-    table.dash-cant-table th,table.dash-cant-table td{ padding:3px 8px; }
-    @media (max-width:900px) {.grid-3,.grid-2,.dash-group{flex-direction:column;grid-template-columns:1fr;}}
+    html, body { height: 100%; margin: 0; font-family: Inter, Arial, sans-serif; background: #f3f4f6; color: #0f172a; padding: 18px; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    h1 { margin: 0 0 12px; font-size: 20px; }
+    .card { background: #fff; border-radius: 8px; padding: 12px; box-shadow: 0 1px 4px rgba(2,6,23,.08); margin-bottom: 12px; }
+    label { display: block; font-size: 13px; color: #54627a; margin-bottom: 6px; }
+    input, select, textarea { width: 100%; padding: 8px; border: 1px solid #e6e9ef; border-radius: 6px; font-size: 14px; }
+    button { background: #06b6d4; color: white; padding: 8px 20px; border: none; border-radius: 6px; cursor: pointer; }
+    button:disabled { background: #aaa; cursor: default; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 8px; }
+    th, td { padding: 6px; border-bottom: 1px solid #eee; text-align: left; }
+    .muted { color: #6b7280; font-size: 13px; }
+    .flex-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap;}
+    .dash-group { display: flex; gap: 24px; }
+    .dash-cant { background: #e6f0ff; border-radius: 10px; padding: 18px; flex: 2 1 0; }
+    .dash-time { background: #ece2fe; border-radius: 10px; padding: 18px; flex: 1 1 0; }
+    @media (max-width: 900px) {
+      .grid-3, .grid-2, .dash-group { grid-template-columns: 1fr; flex-direction: column; }
+    }
   </style>
 </head>
 <body>
-<div class="container">
-  <h1>Tracking descarga Buques a granel</h1>
-  <div class="card">
-    <strong>Ficha general</strong>
-    <div class="muted">Datos generales del buque.</div>
-    <div class="grid-3">
-      <div><label>Nombre del buque</label><input id="vessel"></div>
-      <div><label>PRESENTACIÓN NOR Fecha - Hora</label><input id="nor" type="datetime-local"></div>
-      <div><label>ETA Fecha - Hora</label><input id="eta" type="datetime-local"></div>
+  <div class="container">
+    <h1>Tracking descarga Buques a granel</h1>
+
+    <!-- FICHA GENERAL -->
+    <div class="card">
+      <strong>Ficha general</strong>
+      <div class="muted">Datos generales del buque.</div>
+      <div class="grid-3" style="margin-top:8px;">
+        <div><label>Nombre del buque</label><input id="vessel" /></div>
+        <div><label>PRESENTACIÓN NOR Fecha - Hora</label><input id="nor" type="datetime-local" /></div>
+        <div><label>ETA Fecha - Hora</label><input id="eta" type="datetime-local" /></div>
+      </div>
+      <div class="grid-3" style="margin-top:8px;">
+        <div><label>Inicio de operaciones</label><input id="startOp" type="datetime-local" /></div>
+        <div><label>Fin de operaciones</label><input id="endOp" type="datetime-local" /></div>
+        <div><label>Observaciones generales</label><input id="obsGeneral" /></div>
+      </div>
+      <div class="flex-row" style="margin-top:8px;">
+        <button onclick="saveHeader()">Guardar ficha</button>
+        <button onclick="updateAll()">Actualizar dashboard</button>
+        <div class="muted" style="margin-left:auto;">* campos obligatorios</div>
+      </div>
     </div>
-    <div class="grid-3" style="margin-top:8px;">
-      <div><label>Inicio de operaciones</label><input id="startOp" type="datetime-local"></div>
-      <div><label>Fin de operaciones</label><input id="endOp" type="datetime-local"></div>
-      <div><label>Observaciones generales</label><input id="obsGeneral"></div>
+
+    <!-- PRODUCTOS MANIFESTADOS -->
+    <div class="card">
+      <strong>Productos manifestados</strong>
+      <div class="grid-2" style="margin-top:8px;">
+        <div><label>Producto</label><input id="prodNameM" /></div>
+        <div><label>Cantidad manifestada TM</label><input id="prodManifest" type="number" step="0.01" min="0" /></div>
+      </div>
+      <div class="flex-row" style="margin-top:8px;">
+        <button onclick="addProductManifest()">Agregar producto manifestado</button>
+        <button onclick="exportProductsMCSV()" style="background:#111827;">Exportar manifestados CSV</button>
+        <div class="muted" style="margin-left:auto;">Total manifestados: <span id="prodMCount">0</span></div>
+      </div>
+      <table id="prodMTable">
+        <thead>
+          <tr>
+            <th>#</th><th>Producto</th><th>Manifestado (TM)</th><th>Pendiente (TM)</th><th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
     </div>
-    <div class="controls" style="margin-top:10px;">
-      <button onclick="saveHeader()">Guardar ficha</button>
-      <button onclick="updateAll()">Actualizar dashboard</button>
-      <span class="muted" style="margin-left:auto;">* campos obligatorios</span>
+
+    <!-- PRODUCTOS DESCARGADOS -->
+    <div class="card">
+      <strong>Productos descargados</strong>
+      <div class="grid-2" style="margin-top:8px;">
+        <div><label>Producto</label><input id="prodNameD" /></div>
+        <div><label>Cantidad descargada TM</label><input id="prodDownloaded" type="number" step="0.01" min="0" /></div>
+      </div>
+      <div class="flex-row" style="margin-top:8px;">
+        <button onclick="addProductDownloaded()">Agregar producto descargado</button>
+        <button onclick="exportProductsDCSV()" style="background:#111827;">Exportar descargados CSV</button>
+        <div class="muted" style="margin-left:auto;">Total descargados: <span id="prodDCount">0</span></div>
+      </div>
+      <table id="prodDTable">
+        <thead>
+          <tr>
+            <th>#</th><th>Producto</th><th>Descargado (TM)</th><th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
     </div>
-  </div>
-  <div class="card">
-    <strong>Productos manifestados</strong>
-    <div class="grid-2" style="margin-top:8px;">
-      <div><label>Producto</label><input id="prodNameM"></div>
-      <div><label>Cantidad manifestada TM</label><input id="prodManifest" type="number" step="0.01"></div>
-    </div>
-    <div class="controls" style="margin-top:8px;">
-      <button onclick="addProductManifest()">Agregar producto manifestado</button>
-      <button onclick="exportProductsMCSV()" style="background:#111827;">Exportar manifestados CSV</button>
-      <span class="muted" style="margin-left:auto;">Total manifestados: <span id="prodMCount">0</span></span>
-    </div>
-    <table id="prodMTable">
-      <thead>
-        <tr><th>#</th><th>Producto</th><th>Manifestado (TM)</th><th>Pendiente (TM)</th><th>Acciones</th></tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-  <div class="card">
-    <strong>Productos descargados</strong>
-    <div class="grid-2" style="margin-top:8px;">
-      <div><label>Producto</label><input id="prodNameD"></div>
-      <div><label>Cantidad descargada TM</label><input id="prodDownloaded" type="number" step="0.01"></div>
-    </div>
-    <div class="controls" style="margin-top:8px;">
-      <button onclick="addProductDownloaded()">Agregar producto descargado</button>
-      <button onclick="exportProductsDCSV()" style="background:#111827;">Exportar descargados CSV</button>
-      <span class="muted" style="margin-left:auto;">Total descargados: <span id="prodDCount">0</span></span>
-    </div>
-    <table id="prodDTable">
-      <thead>
-        <tr><th>#</th><th>Producto</th><th>Descargado (TM)</th><th>Acciones</th></tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-  <div class="card">
-    <strong>Registro de paradas (incidentes)</strong>
-    <div class="col" style="margin-top:8px;max-width:380px;">
-      <label>Motivo</label>
-      <select id="incReason">
-        <option value="lluvia">Lluvia</option>
-        <option value="movimiento buque">Movimiento Buque</option>
-        <option value="paro por mecanizado">Paro por mecanizado</option>
-        <option value="falta camiones">Falta camiones</option>
-        <option value="problemas buque interno">Problemas buque interno</option>
-        <option value="otros">Otros</option>
-      </select>
-      <label>Bodega afectada</label>
-      <select id="incBodega">
-        <option value="Bodega 1">Bodega 1</option>
-        <option value="Bodega 2">Bodega 2</option>
-        <option value="Buque completo">Buque completo</option>
-      </select>
-      <button onclick="inicioIncidente()">Inicio incidente</button>
-      <button onclick="finIncidente()">Fin incidente</button>
-      <button onclick="exportIncidentsCSV()" style="background:#111827;">Exportar CSV</button>
-    </div>
-    <div class="row">
-      <strong>Tiempo total de paradas: <span id="statDowntime">0</span> min</strong>
-      <span>
-        Filtrar motivo:
-        <select id="filterReason" onchange="updateAll()">
-          <option value="Todos">Todos</option>
+
+    <!-- REGISTRO DE PARADAS (INCIDENTES) -->
+    <div class="card">
+      <strong>Registro de paradas (incidentes)</strong>
+      <div class="col" style="margin-top:8px; max-width:380px;">
+        <label>Motivo</label>
+        <select id="incReason">
           <option value="lluvia">Lluvia</option>
           <option value="movimiento buque">Movimiento Buque</option>
           <option value="paro por mecanizado">Paro por mecanizado</option>
@@ -120,99 +109,21 @@
           <option value="problemas buque interno">Problemas buque interno</option>
           <option value="otros">Otros</option>
         </select>
-        <strong style="margin-left:10px;">Total motivo: <span id="statDowntimeFilter">0</span> min</strong>
-      </span>
-    </div>
-    <table id="incTable">
-      <thead>
-        <tr><th>#</th><th>Inicio</th><th>Fin</th><th>Minutos</th><th>Motivo</th><th>Bodega</th><th>Acciones</th></tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-  <div class="card">
-    <strong>Listado sindicato (fichas)</strong>
-    <div class="grid-3" style="margin-top:8px;">
-      <div><label>Ficha</label><input id="sindFicha"></div>
-      <div><label>No. listado</label><input id="sindNo"></div>
-      <div><label>Placa</label><input id="sindPlaca"></div>
-    </div>
-    <div class="grid-2" style="margin-top:8px;">
-      <div>
-        <label>Producto a cargar</label>
-        <input id="sindProducto">
-      </div>
-      <div style="align-self:end;">
-        <label>Estatus</label>
-        <select id="sindEstatus">
-          <option value="Cargado">Cargado</option>
-          <option value="No Cargado">No Cargado</option>
+        <label>Bodega afectada</label>
+        <select id="incBodega">
+          <option value="Bodega 1">Bodega 1</option>
+          <option value="Bodega 2">Bodega 2</option>
+          <option value="Buque completo">Buque completo</option>
         </select>
-        <button onclick="addSindicato()">Agregar</button>
-        <input type="file" id="sindImport" accept=".csv" onchange="importSindicatoCSV()" style="margin-top:6px;">
+        <button onclick="inicioIncidente()">Inicio incidente</button>
+        <button onclick="finIncidente()">Fin incidente</button>
+        <button onclick="exportIncidentsCSV()" style="background:#111827;">Exportar CSV</button>
       </div>
-    </div>
-    <div class="row" style="margin-top:8px;">
-      <strong>Total camiones: <span id="totalSindicato">0</span></strong>
-      <span class="muted">
-        Filtrar por estatus: 
-        <select id="filtrarEstatus" onchange="renderSindicato()">
-          <option value="Todos">Todos</option>
-          <option value="Cargado">Cargado</option>
-          <option value="No Cargado">No Cargado</option>
-        </select>
-        <span style="margin-left:10px;">Cargados: <strong id="totalCargados">0</strong></span>
-        <span style="margin-left:10px;">No cargados: <strong id="totalNoCargados">0</strong></span>
-      </span>
-    </div>
-    <table id="sindTable">
-      <thead>
-        <tr><th>#</th><th>Ficha</th><th>No.Listado</th><th>Placa</th><th>Producto</th><th>Estatus</th><th>Acciones</th></tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-  <div class="card">
-    <strong>Dashboard y Resumen ejecutivo</strong>
-    <div class="dash-group" style="margin-top:14px;">
-      <div class="dash-cant">
-        <strong>Cantidades por producto</strong>
-        <table class="dash-cant-table" id="dashCantTable">
-          <thead>
-            <tr>
-              <th>Producto</th>
-              <th>Manifestado</th>
-              <th>Descargado</th>
-              <th>Pendiente</th>
-              <th>% Desc.</th>
-              <th>% Pend.</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-        <div style="margin-top:8px;">
-          <strong>Total manifestado:</strong> <span id="dashTotalManifest">0</span> TM |
-          <strong>Total descargado:</strong> <span id="dashTotalDescargado">0</span> TM |
-          <strong>Total pendiente:</strong> <span id="dashTotalPendiente">0</span> TM
-        </div>
-      </div>
-      <div class="dash-time">
-        <strong>Resumen tiempos</strong>
-        <div style="margin:5px 0 0 0;">
-          <strong>Bruto (inicio a fin):</strong>
-          <span id="dashTotalOpTime"></span>
-        </div>
-        <div style="margin:6px 0 0 0;">
-          <strong>Total paradas:</strong>
-          <span id="dashDowntime">0</span> min
-        </div>
-        <div style="margin:6px 0 0 0;">
-          <strong>Tiempo neto operativo:</strong>
-          <span id="dashTimeNeto">0</span> min
-        </div>
-        <div style="margin:6px 0 0 0;">
-          Filtrar por motivo: 
-          <select id="dashFilterReason" onchange="updateAll()">
+      <div class="row" style="margin-top:8px;">
+        <strong>Tiempo total de paradas: <span id="statDowntime">0</span> min</strong>
+        <span>
+          Filtrar motivo:
+          <select id="filterReason" onchange="updateAll()">
             <option value="Todos">Todos</option>
             <option value="lluvia">Lluvia</option>
             <option value="movimiento buque">Movimiento Buque</option>
@@ -221,15 +132,460 @@
             <option value="problemas buque interno">Problemas buque interno</option>
             <option value="otros">Otros</option>
           </select>
+          <strong style="margin-left:10px;">Total motivo: <span id="statDowntimeFilter">0</span> min</strong>
+        </span>
+      </div>
+      <table id="incTable">
+        <thead>
+          <tr><th>#</th><th>Inicio</th><th>Fin</th><th>Minutos</th><th>Motivo</th><th>Bodega</th><th>Acciones</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <!-- LISTADO SINDICATO -->
+    <div class="card">
+      <strong>Listado sindicato (fichas)</strong>
+      <div class="grid-3" style="margin-top:8px;">
+        <div><label>Ficha</label><input id="sindFicha" /></div>
+        <div><label>No. listado</label><input id="sindNo" /></div>
+        <div><label>Placa</label><input id="sindPlaca" /></div>
+      </div>
+      <div class="grid-2" style="margin-top:8px;">
+        <div>
+          <label>Producto a cargar</label>
+          <input id="sindProducto" />
+        </div>
+        <div style="align-self:end;">
+          <label>Estatus</label>
+          <select id="sindEstatus">
+            <option value="Cargado">Cargado</option>
+            <option value="No Cargado">No Cargado</option>
+          </select>
+          <button onclick="addSindicato()">Agregar</button>
+          <input type="file" id="sindImport" accept=".csv" onchange="importSindicatoCSV()" style="margin-top:6px;" />
+        </div>
+      </div>
+      <div class="row" style="margin-top:8px;">
+        <strong>Total camiones: <span id="totalSindicato">0</span></strong>
+        <span class="muted">
+          Filtrar por estatus: 
+          <select id="filtrarEstatus" onchange="renderSindicato()">
+            <option value="Todos">Todos</option>
+            <option value="Cargado">Cargado</option>
+            <option value="No Cargado">No Cargado</option>
+          </select>
+          <span style="margin-left:10px;">Cargados: <strong id="totalCargados">0</strong></span>
+          <span style="margin-left:10px;">No cargados: <strong id="totalNoCargados">0</strong></span>
+        </span>
+      </div>
+      <table id="sindTable">
+        <thead>
+          <tr><th>#</th><th>Ficha</th><th>No.Listado</th><th>Placa</th><th>Producto</th><th>Estatus</th><th>Acciones</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <!-- DASHBOARD Y RESUMEN -->
+    <div class="card">
+      <strong>Dashboard y Resumen ejecutivo</strong>
+      <div class="dash-group" style="margin-top:14px;">
+        <div class="dash-cant">
+          <strong>Cantidades por producto</strong>
+          <table class="dash-cant-table" id="dashCantTable">
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>Manifestado</th>
+                <th>Descargado</th>
+                <th>Pendiente</th>
+                <th>% Descargado</th>
+                <th>% Pendiente</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+          <div style="margin-top:8px;">
+            <strong>Total manifestado:</strong> <span id="dashTotalManifest">0</span> TM | 
+            <strong>Total descargado:</strong> <span id="dashTotalDescargado">0</span> TM | 
+            <strong>Total pendiente:</strong> <span id="dashTotalPendiente">0</span> TM
+          </div>
+        </div>
+        <div class="dash-time">
+          <strong>Resumen tiempos</strong>
+          <div style="margin:5px 0 0 0;">
+            <strong>Tiempo bruto (inicio-fin):</strong> <span id="dashTotalOpTime">--:--</span>
+          </div>
+          <div style="margin:6px 0 0 0;">
+            <strong>Total paradas:</strong> <span id="dashDowntime">0</span> min
+          </div>
+          <div style="margin:6px 0 0 0;">
+            <strong>Tiempo neto operativo:</strong> <span id="dashTimeNeto">0</span> min
+          </div>
+          <div style="margin:6px 0 0 0;">
+            Filtrar paradas por motivo: 
+            <select id="dashFilterReason" onchange="updateAll()">
+              <option value="Todos">Todos</option>
+              <option value="lluvia">Lluvia</option>
+              <option value="movimiento buque">Movimiento Buque</option>
+              <option value="paro por mecanizado">Paro por mecanizado</option>
+              <option value="falta camiones">Falta camiones</option>
+              <option value="problemas buque interno">Problemas buque interno</option>
+              <option value="otros">Otros</option>
+            </select>
+          </div>
         </div>
       </div>
     </div>
   </div>
-</div>
-<footer class="muted" style="text-align:center;margin-top:20px;">Plantilla avanzada v2025.</footer>
+
+  <footer style="text-align:center;margin-top:20px;" class="muted">Plantilla avanzada v2025.</footer>
+
 <script>
-// variables de estado, helpers, render, validaciones, etc.
-[Debido a limitaciones de espacio y experiencia de usuario, el JavaScript completo (que incluye todas las funciones, ciclos, validaciones y renderizado) se recomienda copiar desde la respuesta inmediatamente anterior, o avisar para repartirlo en dos respuestas a copiar consecutivas; si lo deseas explícitamente dime "mándame el JS en partes".]
+  const DBKEY = 'trackingdescarga_vfinal';
+  let state = {
+    header: {},
+    prodManifestados: [],
+    prodDescargados: [],
+    incidents: [],
+    sindicato: []
+  };
+
+  window.onload = function() {
+    const raw = localStorage.getItem(DBKEY);
+    if(raw) state = JSON.parse(raw);
+    updateAll();
+  };
+
+  // Guardar estado en localstorage
+  function saveState() {
+    localStorage.setItem(DBKEY, JSON.stringify(state));
+  }
+
+  // Guardar ficha general
+  function saveHeader() {
+    const v = document.getElementById('vessel').value.trim();
+    const nor = document.getElementById('nor').value;
+    const s = document.getElementById('startOp').value;
+    const e = document.getElementById('endOp').value;
+    if(!v){alert('Nombre del buque es obligatorio'); return;}
+    if(!s || !e){alert('Fechas inicio y fin obligatorias'); return;}
+    if(new Date(e) <= new Date(s)){alert('La fecha fin debe ser posterior al inicio'); return;}
+    state.header = {
+      vessel: v,
+      nor: nor,
+      eta: document.getElementById('eta').value,
+      startOp: s,
+      endOp: e,
+      obs: document.getElementById('obsGeneral').value
+    };
+    saveState();
+    alert('Ficha guardada');
+    updateAll();
+  }
+
+  // Función que actualiza todo
+  function updateAll() {
+    renderProductsManifest();
+    renderProductsDownloaded();
+    renderIncidents();
+    renderSindicato();
+    renderDashboard();
+  }
+
+  // Funciones productos
+  function addProductManifest() {
+    const name = document.getElementById('prodNameM').value.trim();
+    const manifest = parseFloat(document.getElementById('prodManifest').value || 0);
+    if(!name) {alert('Producto es obligatorio'); return;}
+    if(manifest <= 0) {alert('Cantidad manifestada debe ser > 0'); return;}
+    const rec = {id: Date.now(), name, manifest};
+    state.prodManifestados.push(rec);
+    saveState();
+    renderProductsManifest();
+    document.getElementById('prodNameM').value = '';
+    document.getElementById('prodManifest').value = '';
+  }
+
+  function renderProductsManifest() {
+    const tbody = document.querySelector('#prodMTable tbody');
+    tbody.innerHTML = '';
+    state.prodManifestados.forEach((p, idx) => {
+      const descargado = state.prodDescargados.filter(d => d.name === p.name).reduce((s, d) => s + d.downloaded, 0);
+      const pendiente = (p.manifest - descargado).toFixed(2);
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${idx + 1}</td>
+        <td>${p.name}</td>
+        <td>${p.manifest.toFixed(2)}</td>
+        <td>${pendiente}</td>
+        <td><button onclick="delProductManifest(${p.id})">Eliminar</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+    document.getElementById('prodMCount').innerText = state.prodManifestados.length;
+  }
+
+  function delProductManifest(id) {
+    state.prodManifestados = state.prodManifestados.filter(p => p.id !== id);
+    saveState();
+    renderProductsManifest();
+  }
+
+  function exportProductsMCSV() {
+    const rows = [["Producto", "Manifestado (TM)"]];
+    state.prodManifestados.forEach(p => rows.push([p.name, p.manifest]));
+    downloadCSV(rows, "manifestados.csv");
+  }
+
+  function addProductDownloaded() {
+    const name = document.getElementById('prodNameD').value.trim();
+    const downloaded = parseFloat(document.getElementById('prodDownloaded').value || 0);
+    if(!name) {alert('Producto es obligatorio'); return;}
+    if(downloaded <= 0) {alert('Cantidad descargada inválida'); return;}
+    const rec = {id: Date.now(), name, downloaded};
+    state.prodDescargados.push(rec);
+    saveState();
+    renderProductsDownloaded();
+    renderProductsManifest();
+    updateAll();
+    document.getElementById('prodNameD').value = '';
+    document.getElementById('prodDownloaded').value = '';
+  }
+
+  function renderProductsDownloaded() {
+    const tbody = document.querySelector('#prodDTable tbody');
+    tbody.innerHTML = '';
+    state.prodDescargados.forEach((p, idx) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${idx + 1}</td>
+        <td>${p.name}</td>
+        <td>${p.downloaded.toFixed(2)}</td>
+        <td><button onclick="delProductDownloaded(${p.id})">Eliminar</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+    document.getElementById('prodDCount').innerText = state.prodDescargados.length;
+  }
+
+  function delProductDownloaded(id) {
+    state.prodDescargados = state.prodDescargados.filter(p => p.id !== id);
+    saveState();
+    renderProductsDownloaded();
+  }
+
+  // Incidentes
+  let incidenteActivo = {id: null, start: null, reason: null, bodega: null};
+
+  function inicioIncidente() {
+    incidenteActivo = {
+      id: Date.now(),
+      start: new Date(),
+      reason: document.getElementById('incReason').value,
+      bodega: document.getElementById('incBodega').value
+    };
+    alert("Incidente iniciado: " + incidenteActivo.start.toLocaleString() + " / Motivo: " + incidenteActivo.reason);
+  }
+
+  function finIncidente() {
+    if(!incidenteActivo.start) {
+      alert("Debes iniciar primero el incidente.");
+      return;
+    }
+    const fin = new Date();
+    const minutos = Math.round((fin - incidenteActivo.start) / 60000);
+    state.incidents.push({
+      id: incidenteActivo.id,
+      start: incidenteActivo.start.toISOString(),
+      end: fin.toISOString(),
+      minutes: minutos,
+      reason: incidenteActivo.reason,
+      bodega: incidenteActivo.bodega
+    });
+    incidenteActivo = {id: null, start: null, reason: null, bodega: null};
+    saveState();
+    renderIncidents();
+    updateAll();
+  }
+
+  function renderIncidents() {
+    const tbody = document.querySelector('#incTable tbody');
+    tbody.innerHTML = '';
+    let filter = document.getElementById('filterReason').value;
+    let list = filter === "Todos" ? state.incidents : state.incidents.filter(i => i.reason === filter);
+    let tiempoTotalMotivo = list.reduce((s,i) => s + i.minutes, 0);
+    document.getElementById('statDowntimeFilter').innerText = tiempoTotalMotivo;
+    list.forEach((i, idx) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${idx + 1}</td>
+        <td>${new Date(i.start).toLocaleString()}</td>
+        <td>${new Date(i.end).toLocaleString()}</td>
+        <td>${i.minutes}</td>
+        <td>${i.reason}</td>
+        <td>${i.bodega}</td>
+        <td><button onclick="delIncident(${i.id})">Eliminar</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+    let tiempoParadas = state.incidents.reduce((s, i) => s + i.minutes, 0);
+    document.getElementById('statDowntime').innerText = tiempoParadas;
+  }
+
+  function delIncident(id) {
+    state.incidents = state.incidents.filter(i => i.id !== id);
+    saveState();
+    renderIncidents();
+    updateAll();
+  }
+
+  function exportIncidentsCSV() {
+    const rows = [["Inicio","Fin","Minutos","Motivo","Bodega"]];
+    state.incidents.forEach(i => rows.push([i.start,i.end,i.minutes,i.reason,i.bodega]));
+    downloadCSV(rows,"incidentes.csv");
+  }
+
+  // Sindicato
+  function addSindicato() {
+    const ficha = document.getElementById('sindFicha').value.trim();
+    const no = document.getElementById('sindNo').value.trim();
+    const placa = document.getElementById('sindPlaca').value.trim();
+    const producto = document.getElementById('sindProducto').value.trim();
+    const estatus = document.getElementById('sindEstatus').value;
+    if(!ficha || !no) {
+      alert("Ficha y No.listado obligatorios");
+      return;
+    }
+    const existe = state.sindicato.some(x => x.ficha === ficha && x.no === no);
+    if(existe) {
+      alert("Ya existe esa ficha en ese listado.");
+      return;
+    }
+    state.sindicato.push({id: Date.now(), ficha, no, placa, producto, estatus});
+    saveState();
+    renderSindicato();
+    document.getElementById('sindFicha').value = '';
+    document.getElementById('sindNo').value = '';
+    document.getElementById('sindPlaca').value = '';
+    document.getElementById('sindProducto').value = '';
+  }
+
+  function importSindicatoCSV() {
+    const input = document.getElementById('sindImport');
+    if(!input.files.length) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const lines = e.target.result.split('\n');
+      lines.forEach((line, idx) => {
+        if(idx == 0) return;
+        const parts = line.split(',');
+        if(parts.length >= 5) {
+          const ficha = parts[0], no = parts[1], existe = state.sindicato.some(x => x.ficha === ficha && x.no === no);
+          if(!existe) {
+            state.sindicato.push({id: Date.now(), ficha: parts[0], no: parts[1], placa: parts[2], producto: parts[3], estatus: parts[4]});
+          }
+        }
+      });
+      saveState();
+      renderSindicato();
+    };
+    reader.readAsText(input.files[0]);
+  }
+
+  function renderSindicato() {
+    const tbody = document.querySelector('#sindTable tbody');
+    tbody.innerHTML = '';
+    let filterEstatus = document.getElementById('filtrarEstatus').value;
+    let list = filterEstatus === "Todos" ? state.sindicato : state.sindicato.filter(s => s.estatus === filterEstatus);
+    let totalCargados = list.filter(s => s.estatus === "Cargado").length;
+    let totalNoCargados = list.filter(s => s.estatus === "No Cargado").length;
+    document.getElementById('totalSindicato').innerText = list.length;
+    document.getElementById('totalCargados').innerText = totalCargados;
+    document.getElementById('totalNoCargados').innerText = totalNoCargados;
+    list.forEach((s, idx) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${idx + 1}</td>
+        <td>${s.ficha}</td>
+        <td>${s.no}</td>
+        <td>${s.placa}</td>
+        <td>${s.producto}</td>
+        <td>
+          <select onchange="updateEstatusSindicato('${s.id}', this.value)">
+            <option value="Cargado"${s.estatus == "Cargado" ? " selected" : ""}>Cargado</option>
+            <option value="No Cargado"${s.estatus == "No Cargado" ? " selected" : ""}>No Cargado</option>
+          </select>
+        </td>
+        <td><button onclick="delSindicato(${s.id})">Eliminar</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function updateEstatusSindicato(id, val) {
+    let idx = state.sindicato.findIndex(s => s.id == id);
+    if(idx > -1) {
+      state.sindicato[idx].estatus = val;
+      saveState();
+      renderSindicato();
+    }
+  }
+  
+  function delSindicato(id) {
+    state.sindicato = state.sindicato.filter(s => s.id != id);
+    saveState();
+    renderSindicato();
+  }
+
+  // DASHBOARD
+  function renderDashboard() {
+    let h = state.header;
+    let opMinutes = h.startOp && h.endOp ? Math.round((new Date(h.endOp) - new Date(h.startOp)) / 60000) : 0;
+
+    // Cantidades por producto
+    let tb = document.querySelector('#dashCantTable tbody');
+    tb.innerHTML = '';
+    let prodNames = [...new Set(state.prodManifestados.map(m => m.name).concat(state.prodDescargados.map(d => d.name)))];
+    let totalM = 0, totalD = 0, totalP = 0;
+    prodNames.forEach(n => {
+      let m = state.prodManifestados.filter(p => p.name === n).reduce((s, p) => s + p.manifest, 0);
+      let d = state.prodDescargados.filter(p => p.name === n).reduce((s, p) => s + p.downloaded, 0);
+      let p = Math.max(m - d, 0);
+      totalM += m; totalD += d; totalP += p;
+      let pctD = d > 0 ? 100 * (d / m) : 0, pctP = 100 - pctD;
+      let tr = document.createElement('tr');
+      tr.innerHTML = `<td>${n}</td><td>${m.toFixed(2)}</td><td>${d.toFixed(2)}</td><td>${p.toFixed(2)}</td><td>${pctD.toFixed(1)}%</td><td>${pctP.toFixed(1)}%</td>`;
+      tb.appendChild(tr);
+    });
+    document.getElementById('dashTotalManifest').innerText = totalM.toFixed(2);
+    document.getElementById('dashTotalDescargado').innerText = totalD.toFixed(2);
+    document.getElementById('dashTotalPendiente').innerText = totalP.toFixed(2);
+
+    // Resumen tiempos
+    document.getElementById('dashTotalOpTime').innerText = opMinutes > 0 ? (Math.floor(opMinutes / 60) + ":" + String(opMinutes % 60).padStart(2, "0")) : "--";
+    let motive = document.getElementById('dashFilterReason').value;
+    let downs = motive === "Todos" ? state.incidents : state.incidents.filter(i => i.reason === motive);
+    let downTime = downs.reduce((s, i) => s + i.minutes, 0);
+    document.getElementById('dashDowntime').innerText = downTime;
+    document.getElementById('dashTimeNeto').innerText = opMinutes > 0 ? (opMinutes - downTime) : "--";
+    
+    // Cantidad pendiente y descargada totales actualizadas en otros widgets
+    document.getElementById('statPending').innerText = totalP.toFixed(2);
+    document.getElementById('statDownloadedTotal').innerText = totalD.toFixed(2);
+    document.getElementById('statIncCount').innerText = state.incidents.length;
+  }
+
+  // Funciones utilitarias
+  function downloadCSV(rows, filename) {
+    let csv = rows.map(r => r.map(c => String(c).replace(/"/g, '""')).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+  }
 </script>
 </body>
 </html>
