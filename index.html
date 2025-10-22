@@ -92,10 +92,12 @@
     <div style="margin-top:8px; display:flex; align-items:center;">
       <button onclick="addProductManifest()">Agregar producto manifestado</button>
       <button onclick="exportProductsMCSV()" style="background:#111827;">Exportar manifestados CSV</button>
-      <div class="muted" style="margin-left:auto;">Total manifestados: <span id="prodMCount">0</span></div>
+      <div class="muted" style="margin-left: auto;">Total manifestados: <span id="prodMCount">0</span></div>
     </div>
     <table id="prodMTable">
-      <thead><tr><th>#</th><th>Producto</th><th>Bodega</th><th>Total Manifestado</th><th>Pendiente</th><th>Acciones</th></tr></thead>
+      <thead>
+        <tr><th>#</th><th>Producto</th><th>Bodega</th><th>Total Manifestado</th><th>Pendiente</th><th>Acciones</th></tr>
+      </thead>
       <tbody></tbody>
     </table>
   </div>
@@ -114,10 +116,12 @@
     <div style="margin-top:8px; display:flex; align-items:center;">
       <button onclick="addProductDownloaded()">Agregar producto descargado</button>
       <button onclick="exportProductsDCSV()" style="background:#111827;">Exportar descargados CSV</button>
-      <div class="muted" style="margin-left:auto;">Total descargados: <span id="prodDCount">0</span></div>
+      <div class="muted" style="margin-left: auto;">Total descargados: <span id="prodDCount">0</span></div>
     </div>
     <table id="prodDTable">
-      <thead><tr><th>#</th><th>Producto</th><th>Bodega</th><th>Total Descargado</th><th>Acciones</th></tr></thead>
+      <thead>
+        <tr><th>#</th><th>Producto</th><th>Bodega</th><th>Total Descargado</th><th>Acciones</th></tr>
+      </thead>
       <tbody></tbody>
     </table>
     <div class="card mecanizado" style="margin-top:12px;">
@@ -278,14 +282,11 @@
     <div style="margin-top:9px;font-size:15px;" id="boxResumenEjecutivo"></div>
   </div>
 </div>
-
 <script>
 const feriadosRD2025 = ["2025-01-01","2025-01-06","2025-01-21","2025-01-26","2025-02-27","2025-03-24","2025-04-18","2025-05-01","2025-05-30","2025-06-03","2025-08-16","2025-09-24","2025-12-25"];
-
 let state = {header:{},prodManifestados:[],prodDescargados:[],incidents:[],sindicato:[], mecanizado:[]};
 const DBKEY = 'trackingdescarga_prod_bod_dashboard';
 const PW_AUTORIZA = "AUTORIZADO2025";
-
 window.onload = function() {
   const raw = localStorage.getItem(DBKEY);
   if(raw) state = JSON.parse(raw);
@@ -293,7 +294,6 @@ window.onload = function() {
   makeDraggable(document.getElementById('chartContainer'));
   updateAll();
 };
-
 function makeDraggable(el) {
   let pos1=0, pos2=0, pos3=0, pos4=0;
   el.onmousedown = dragMouseDown;
@@ -310,19 +310,13 @@ function makeDraggable(el) {
     el.style.top = (el.offsetTop - pos2) + "px";
     el.style.left = (el.offsetLeft - pos1) + "px";
   }
-  function closeDragElement() {
-    document.onmouseup = null;
-    document.onmousemove = null;
-  }
+  function closeDragElement() { document.onmouseup = null; document.onmousemove = null; }
 }
-
 function toggleChart() {
   const c = document.getElementById('chartContainer');
   c.style.display = (c.style.display === 'none' || c.style.display === '') ? 'block' : 'none';
 }
-
 function saveState() { localStorage.setItem(DBKEY, JSON.stringify(state)); }
-
 function saveHeader() {
   state.header = {
     vessel: document.getElementById('vessel').value.trim(),
@@ -337,7 +331,6 @@ function saveHeader() {
   };
   saveState(); updateAll();
 }
-
 function calcularLaytime() {
   let total = getTotalManifestadoGlobal();
   let rata = parseFloat(document.getElementById('rataContratada').value || 0);
@@ -365,7 +358,6 @@ function calcularLaytime() {
   document.getElementById('tiempoHabil').value = `${dias} días, ${horas}h, ${mins}m`;
   document.getElementById('tiempoHabilDetalle').innerText = `(Incluye SHEX: ${diasSumar}d, lluvia: ${Math.round(minLluvia / 60)}h)`;
 }
-
 function contarDiasDomingoFeriado(fecha1, fecha2) {
   let count = 0;
   for (let d = new Date(fecha1); d <= fecha2; d.setDate(d.getDate() + 1)) {
@@ -374,17 +366,14 @@ function contarDiasDomingoFeriado(fecha1, fecha2) {
   }
   return count;
 }
-
 function getMinutosParadaLluviaDesde(desdeFecha) {
   let desdeT = desdeFecha.getTime();
   return (state.incidents || []).filter(i => i.reason === "lluvia" && new Date(i.start) >= desdeT)
     .reduce((s, i) => s + (i.minutes || 0), 0);
 }
-
 function getTotalManifestadoGlobal() {
   return state.prodManifestados.reduce((s, x) => s + (x.manifest || 0), 0);
 }
-
 function addProductManifest() {
   const name = document.getElementById('prodNameM').value;
   const bodega = document.getElementById('prodBodegaM').value;
@@ -410,7 +399,6 @@ function addProductManifest() {
   document.getElementById('prodManifest').value = '';
   document.getElementById('prodBodegaM').value = '';
 }
-
 function addProductDownloaded() {
   const name = document.getElementById('prodNameD').value;
   const bodega = document.getElementById('prodBodegaD').value;
@@ -446,7 +434,6 @@ function addProductDownloaded() {
   document.getElementById('prodDownloaded').value = '';
   document.getElementById('prodBodegaD').value = '';
 }
-
 function renderProductsManifest() {
   const tbody = document.querySelector('#prodMTable tbody');
   tbody.innerHTML = '';
@@ -472,17 +459,14 @@ function renderProductsManifest() {
   });
   document.getElementById('prodMCount').innerText = rows.length;
 }
-
 function getTotalManifestado(name, bodega) {
   return state.prodManifestados.filter(x => x.name === name && x.bodega === bodega)
     .reduce((s, p) => s + p.manifest, 0);
 }
-
 function getTotalDescargado(name, bodega) {
   return state.prodDescargados.filter(x => x.name === name && x.bodega === bodega)
     .reduce((s, p) => s + p.downloaded, 0);
 }
-
 function delProductManifest(prod, bodega) {
   state.prodManifestados = state.prodManifestados.filter(x => !(x.name === prod && x.bodega === bodega));
   saveState();
@@ -490,7 +474,6 @@ function delProductManifest(prod, bodega) {
   renderDashboard();
   renderChart();
 }
-
 function renderProductsDownloaded() {
   const tbody = document.querySelector('#prodDTable tbody');
   tbody.innerHTML = '';
@@ -512,7 +495,6 @@ function renderProductsDownloaded() {
   });
   document.getElementById('prodDCount').innerText = Object.keys(agrupado).length;
 }
-
 function delProductDownloaded(prod, bodega) {
   state.prodDescargados = state.prodDescargados.filter(x => !(x.name === prod && x.bodega === bodega));
   saveState();
@@ -520,7 +502,6 @@ function delProductDownloaded(prod, bodega) {
   renderDashboard();
   renderChart();
 }
-
 function addMecanizado() {
   let linea = document.getElementById('mecanLinea').value;
   let tm = parseFloat(document.getElementById('mecanTM').value || 0);
@@ -532,7 +513,6 @@ function addMecanizado() {
   updateAll();
   document.getElementById('mecanTM').value = '';
 }
-
 function renderMecanizado() {
   let tb = document.getElementById('mecanizadoTable').getElementsByTagName('tbody')[0];
   tb.innerHTML = '';
@@ -542,13 +522,11 @@ function renderMecanizado() {
     tb.appendChild(tr);
   });
 }
-
 function delMecanizado(id) {
   state.mecanizado = state.mecanizado.filter(x => x.id != id);
   saveState();
   updateAll();
 }
-
 function generarPromedioMecanizado() {
   let sum = state.mecanizado.reduce((s, x) => s + x.tm, 0);
   let n = state.mecanizado.length;
@@ -556,7 +534,6 @@ function generarPromedioMecanizado() {
   document.getElementById('promedioMecanizado').innerText = promedio > 0 ? ("Prom.: " + promedio.toFixed(2) + " t/h") : '';
   return promedio;
 }
-
 function toggleSindBodegaInput() {
   const estatus = document.getElementById('sindEstatus').value;
   const box = document.getElementById('sindBodegaBox');
@@ -564,7 +541,6 @@ function toggleSindBodegaInput() {
     box.innerHTML = '<label style="display:inline; font-size:13px;">Bodega</label><select id="sindBodega" class="bodega-select"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option></select>';
   } else { box.innerHTML = ''; }
 }
-
 function addSindicato() {
   const ficha = document.getElementById('sindFicha').value.trim();
   const no = document.getElementById('sindNo').value.trim();
@@ -595,7 +571,6 @@ function addSindicato() {
   document.getElementById('sindProducto').value = '';
   toggleSindBodegaInput();
 }
-
 function importSindicatoCSV() {
   const input = document.getElementById('sindImport');
   if (!input.files.length) return;
@@ -617,7 +592,6 @@ function importSindicatoCSV() {
   };
   reader.readAsText(input.files[0]);
 }
-
 function renderSindicato() {
   const tbody = document.querySelector('#sindTable tbody');
   tbody.innerHTML = '';
@@ -655,3 +629,245 @@ function renderSindicato() {
       <td>${bodegaHtml}</td>
       <td><button onclick="delSindicato(${s.id})">Eliminar</button></td>
     `;
+    tbody.appendChild(tr);
+  });
+}
+function updateSindBodega(id, val) {
+  let idx = state.sindicato.findIndex(s => s.id == id);
+  if (idx > -1) {
+    state.sindicato[idx].bodega = val;
+    saveState(); renderSindicato();
+  }
+}
+function updateEstatusSindicato(id, val) {
+  let idx = state.sindicato.findIndex(s => s.id == id);
+  if (idx > -1) {
+    state.sindicato[idx].estatus = val;
+    if (val === "Cargado" && !state.sindicato[idx].bodega) state.sindicato[idx].bodega = '1';
+    if (val !== "Cargado") state.sindicato[idx].bodega = '';
+    saveState();
+    renderSindicato();
+  }
+}
+function delSindicato(id) {
+  state.sindicato = state.sindicato.filter(s => s.id != id);
+  saveState();
+  renderSindicato();
+}
+let chartObj = null;
+function renderChart() {
+  let ctx = document.getElementById('mainChart').getContext('2d');
+  let prod = document.getElementById('chartProd').value;
+  let dataM = 0, dataD = 0, dataP = 0;
+  let agrupadoM = {}, agrupadoD = {};
+  state.prodManifestados.forEach(x => {
+    if (prod === "TODOS" || x.name === prod) {
+      let k = x.name + "|" + x.bodega;
+      agrupadoM[k] = (agrupadoM[k] || 0) + x.manifest;
+    }
+  });
+  state.prodDescargados.forEach(x => {
+    if (prod === "TODOS" || x.name === prod) {
+      let k = x.name + "|" + x.bodega;
+      agrupadoD[k] = (agrupadoD[k] || 0) + x.downloaded;
+    }
+  });
+  Object.keys(agrupadoM).forEach(k => {
+    dataM += agrupadoM[k];
+    dataD += (agrupadoD[k] || 0);
+  });
+  dataP = dataM - dataD;
+  if (chartObj) chartObj.destroy();
+  chartObj = new Chart(ctx, {
+    plugins: [ChartDataLabels],
+    type: 'doughnut',
+    data: {
+      labels: ["Manifestado", "Descargado", "Pendiente"],
+      datasets: [{
+        label: prod,
+        backgroundColor: ["#099", "purple", "#f8b347"],
+        borderColor: ["#fff", "#fff", "#fff"],
+        borderWidth: 2,
+        data: [dataM, dataD, dataP]
+      }]
+    },
+    options: {
+      aspectRatio: 2,
+      plugins: {
+        legend: { display: true, position: "bottom" },
+        datalabels: {
+          color: '#000',
+          formatter: (value) => Math.round(value),
+          font: { weight: 'bold', size: 14 },
+        }
+      },
+      animation: { duration: 500 }
+    }
+  });
+}
+function renderDashboard() {
+  let agrupadoM = {}, agrupadoD = {};
+  state.prodManifestados.forEach(x => {
+    let k = x.name + "|" + x.bodega;
+    agrupadoM[k] = (agrupadoM[k] || 0) + x.manifest;
+  });
+  state.prodDescargados.forEach(x => {
+    let k = x.name + "|" + x.bodega;
+    agrupadoD[k] = (agrupadoD[k] || 0) + x.downloaded;
+  });
+  let tb = document.querySelector('#dashCantTable tbody');
+  tb.innerHTML = '';
+  let totalM = 0, totalD = 0, totalP = 0;
+  Object.keys(agrupadoM).forEach((k, idx) => {
+    let [prod, bod] = k.split('|');
+    let manifiesto = agrupadoM[k];
+    let descargado = agrupadoD[k] || 0;
+    let pendiente = manifiesto - descargado;
+    let pctDesc = manifiesto > 0 ? 100 * descargado / manifiesto : 0;
+    totalM += manifiesto; totalD += descargado; totalP += pendiente;
+    let tr = document.createElement('tr');
+    tr.innerHTML = `<td>${prod}</td><td>${bod}</td><td>${manifiesto.toFixed(2)}</td><td>${descargado.toFixed(2)}</td><td>${pendiente.toFixed(2)}</td><td>${pctDesc.toFixed(1)}%</td>`;
+    tb.appendChild(tr);
+  });
+  document.getElementById('dashTotalManifest').innerText = totalM.toFixed(2);
+  document.getElementById('dashTotalDescargado').innerText = totalD.toFixed(2);
+  document.getElementById('dashTotalPendiente').innerText = (totalM - totalD).toFixed(2);
+  let h = state.header;
+  let opMinutes = h.startOp && h.endOp ? Math.round((new Date(h.endOp) - new Date(h.startOp)) / 60000) : 0;
+  document.getElementById('dashTotalOpTime').innerText = opMinutes > 0 ? (Math.floor(opMinutes / 60) + ":" + String(opMinutes % 60).padStart(2, "0")) : '--';
+  let motive = document.getElementById('dashFilterReason').value;
+  let downs = motive === "Todos" ? state.incidents : state.incidents.filter(i => i.reason === motive);
+  let downTime = downs.reduce((s, i) => s + i.minutes, 0);
+  document.getElementById('dashDowntime').innerText = downTime;
+  document.getElementById('dashTimeNeto').innerText = opMinutes > 0 ? (opMinutes - downTime) : '--';
+  const sel = document.getElementById('chartProd');
+  let allProds = [...new Set(Object.keys(agrupadoM).concat(Object.keys(agrupadoD)).map(x => x.split('|')[0]))];
+  sel.innerHTML = '<option value="TODOS">Todos</option>' + allProds.map(x => `<option value="${x}">${x}</option>`).join('');
+  renderMecanizado();
+  renderResumenEjecutivo();
+}
+function updateAll() {
+  renderProductsManifest();
+  renderProductsDownloaded();
+  renderIncidents();
+  renderSindicato();
+  renderDashboard();
+  renderChart();
+}
+function downloadCSV(rows, filename) {
+  let csv = rows.map(r => r.map(c => String(c).replace(/"/g, '""')).join(",")).join("\n");
+  const blob = new Blob([csv], { type: "text/csv" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+}
+let incidenteActivo = { id: null, start: null, reason: null, bodega: null };
+function inicioIncidente() {
+  incidenteActivo = {
+    id: Date.now(),
+    start: new Date(),
+    reason: document.getElementById('incReason').value,
+    bodega: document.getElementById('incBodega').value
+  };
+  alert("Incidente iniciado: " + incidenteActivo.start.toLocaleString() + " / Motivo: " + incidenteActivo.reason);
+}
+function finIncidente() {
+  if (!incidenteActivo.start) {
+    alert("Debes iniciar primero el incidente."); return;
+  }
+  const fin = new Date();
+  const minutos = Math.round((fin - incidenteActivo.start) / 60000);
+  state.incidents.push({
+    id: incidenteActivo.id,
+    start: incidenteActivo.start.toISOString(),
+    end: fin.toISOString(),
+    minutes: minutos,
+    reason: incidenteActivo.reason,
+    bodega: incidenteActivo.bodega
+  });
+  incidenteActivo = { id: null, start: null, reason: null, bodega: null };
+  saveState();
+  renderIncidents();
+  updateAll();
+}
+function renderIncidents() {
+  const tbody = document.querySelector('#incTable tbody');
+  tbody.innerHTML = '';
+  let filter = document.getElementById('filterReason').value;
+  let list = filter === "Todos" ? state.incidents : state.incidents.filter(i => i.reason === filter);
+  let tiempoTotalMotivo = list.reduce((s,i) => s + i.minutes, 0);
+  document.getElementById('statDowntimeFilter').innerText = tiempoTotalMotivo;
+  list.forEach((i, idx) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${idx + 1}</td>
+      <td>${new Date(i.start).toLocaleString()}</td>
+      <td>${new Date(i.end).toLocaleString()}</td>
+      <td>${i.minutes}</td>
+      <td>${i.reason}</td>
+      <td>${i.bodega}</td>
+      <td><button onclick="delIncident(${i.id})">Eliminar</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+  let tiempoParadas = state.incidents.reduce((s, i) => s + i.minutes, 0);
+  document.getElementById('statDowntime').innerText = tiempoParadas;
+}
+function delIncident(id) {
+  state.incidents = state.incidents.filter(i => i.id !== id);
+  saveState();
+  renderIncidents();
+  updateAll();
+}
+function exportProductsMCSV() {
+  const rows=[["Producto","Bodega","Manifestado (TM)"]];
+  state.prodManifestados.forEach(p=>rows.push([p.name,p.bodega,p.manifest]));
+  downloadCSV(rows,"manifestados.csv");
+}
+function exportProductsDCSV() {
+  const rows=[["Producto","Bodega","Descargado (TM)"]];
+  state.prodDescargados.forEach(p=>rows.push([p.name,p.bodega,p.downloaded]));
+  downloadCSV(rows,"descargados.csv");
+}
+function exportIncidentsCSV() {
+  const rows = [["Inicio","Fin","Minutos","Motivo","Bodega"]];
+  state.incidents.forEach(i => rows.push([i.start,i.end,i.minutes,i.reason,i.bodega]));
+  downloadCSV(rows,"incidentes.csv");
+}
+function renderResumenEjecutivo() {
+  let totalC = state.sindicato.length;
+  let cargados = state.sindicato.filter(x => x.estatus === "Cargado").length;
+  let pctCargados = totalC > 0 ? 100 * cargados / totalC : 0;
+  let totalProd = state.prodManifestados.reduce((a,x)=>a+x.manifest,0);
+  let despachado = state.prodDescargados.reduce((a,x)=>a+x.downloaded,0);
+  let pctDespachado = totalProd>0 ? 100*despachado/totalProd : 0;
+  let laytimeMin = 0;
+  let tiempoHabil = document.getElementById('tiempoHabil').value;
+  if(tiempoHabil){
+    let m = tiempoHabil.match(/(\d+)\s*días,\s*(\d+)h,\s*(\d+)m/);
+    if(m) laytimeMin = (+m[1])*1440 + (+m[2])*60 + (+m[3]);
+  }
+  let totalMecanizado = state.mecanizado.reduce((s,x)=>s+x.tm,0);
+  let totalHorasMecan = (state.mecanizado.length || 1);
+  let promMecan = totalMecanizado / totalHorasMecan;
+  let opMinutes = state.header.startOp && state.header.endOp ? Math.round((new Date(state.header.endOp) - new Date(state.header.startOp)) / 60000) : 0;
+  let horasOp = Math.max(opMinutes/60,1);
+  let promCamion = horasOp>0?despachado/horasOp:0;
+  let promGlobal = horasOp>0?(despachado+totalMecanizado)/(horasOp):0;
+  let faltanTM = totalProd-(despachado+totalMecanizado);
+  let proyFaltanteHr = promGlobal>0?faltanTM/promGlobal:0;
+  document.getElementById('boxResumenEjecutivo').innerHTML = `
+    Relación camiones: ${cargados} cargados de ${totalC} (${pctCargados.toFixed(1)}%)<br>
+    Despachado: ${despachado.toFixed(2)} TM de ${totalProd.toFixed(2)} (${pctDespachado.toFixed(1)}%)<br>
+    Tiempo hábil (contrato): ${tiempoHabil||'--'}<br>
+    TM/h por camión: ${promCamion.toFixed(2)}<br>
+    TM/h por mecanizado: ${promMecan.toFixed(2)}<br>
+    TM/h total: ${promGlobal.toFixed(2)}<br>
+    Proyección horas faltantes: ${proyFaltanteHr>0?proyFaltanteHr.toFixed(2):'--'}<br>
+    TM faltantes: ${faltanTM.toFixed(2)}<br>
+  `;
+}
+</script>
+</body>
+</html>
