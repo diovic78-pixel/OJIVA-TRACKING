@@ -15,8 +15,10 @@
     button { background: #06b6d4; color: white; padding: 8px 10px; border: 0; border-radius: 6px; cursor: pointer;}
     .grid-2 { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px;}
     .grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px;}
-    .flex-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap;}
     .muted { color: #6b7280; font-size: 13px;}
+    .controls { display: flex; gap: 8px; align-items: center;}
+    .row { display: flex; align-items: center; gap: 18px; margin-top: 8px;}
+    .col { display: flex; flex-direction: column; gap: 6px;}
     @media (max-width:900px) {.grid-3,.grid-2{grid-template-columns:1fr;}}
   </style>
 </head>
@@ -25,8 +27,8 @@
   <h1>Plantilla avanzada - Tracking de descarga Buques a granel</h1>
   <div class="card">
     <strong>Ficha general</strong>
-    <div class="muted">Complete los datos generales del buque. Todos los campos son obligatorios.</div>
-    <div style="margin-top:8px;" class="grid-3">
+    <div class="muted">Complete los datos generales del buque.</div>
+    <div class="grid-3">
       <div>
         <label>Nombre del buque</label>
         <input id="vessel" placeholder="ULTRA YORKSHIRE">
@@ -40,7 +42,7 @@
         <input id="eta" type="datetime-local">
       </div>
     </div>
-    <div style="margin-top:8px;" class="grid-3">
+    <div class="grid-3" style="margin-top:8px;">
       <div>
         <label>Inicio de operaciones Fecha - Hora</label>
         <input id="startOp" type="datetime-local">
@@ -49,25 +51,21 @@
         <label>Fin de operaciones Fecha - Hora</label>
         <input id="endOp" type="datetime-local">
       </div>
-      <div>
-        <label>Observaciones generales</label>
-        <input id="obsGeneral">
-      </div>
+      <div><label>Observaciones generales</label><input id="obsGeneral"></div>
     </div>
-    <div class="flex-row" style="margin-top:8px;">
+    <div class="controls" style="margin-top:10px;">
       <button onclick="saveHeader()">Guardar ficha</button>
       <button onclick="renderDashboard()">Actualizar dashboard</button>
       <span class="muted" style="margin-left:auto;">* campos obligatorios</span>
     </div>
   </div>
-  <!-- PRODUCTOS MANIFESTADOS -->
   <div class="card">
     <strong>Productos manifestados</strong>
     <div class="grid-2" style="margin-top:8px;">
       <div><label>Producto</label><input id="prodNameM" placeholder="Ej: Maíz"></div>
       <div><label>Cantidad manifestada TM</label><input id="prodManifest" type="number" step="0.01"></div>
     </div>
-    <div class="flex-row" style="margin-top:8px;">
+    <div class="controls" style="margin-top:8px;">
       <button onclick="addProductManifest()">Agregar producto manifestado</button>
       <button onclick="exportProductsMCSV()" style="background:#111827;">Exportar manifestados CSV</button>
       <span class="muted" style="margin-left:auto;">Total manifestados: <span id="prodMCount">0</span></span>
@@ -79,14 +77,13 @@
       <tbody></tbody>
     </table>
   </div>
-  <!-- PRODUCTOS DESCARGADOS -->
   <div class="card">
     <strong>Productos descargados</strong>
     <div class="grid-2" style="margin-top:8px;">
       <div><label>Producto</label><input id="prodNameD" placeholder="Ej: Maíz"></div>
       <div><label>Cantidad descargada TM</label><input id="prodDownloaded" type="number" step="0.01"></div>
     </div>
-    <div class="flex-row" style="margin-top:8px;">
+    <div class="controls" style="margin-top:8px;">
       <button onclick="addProductDownloaded()">Agregar producto descargado</button>
       <button onclick="exportProductsDCSV()" style="background:#111827;">Exportar descargados CSV</button>
       <span class="muted" style="margin-left:auto;">Total descargados: <span id="prodDCount">0</span></span>
@@ -98,10 +95,10 @@
       <tbody></tbody>
     </table>
   </div>
-  <!-- REGISTRO DE PARADAS/INCIDENTES -->
   <div class="card">
     <strong>Registro de paradas (incidentes)</strong>
-    <div class="flex-row" style="margin-top:8px;">
+    <div class="col" style="margin-top:8px;max-width:400px;">
+      <label>Motivo</label>
       <select id="incReason">
         <option value="lluvia">Lluvia</option>
         <option value="movimiento buque">Movimiento Buque</option>
@@ -110,6 +107,7 @@
         <option value="problemas buque interno">Problemas buque interno</option>
         <option value="otros">Otros</option>
       </select>
+      <label>Bodega afectada</label>
       <select id="incBodega">
         <option value="Bodega 1">Bodega 1</option>
         <option value="Bodega 2">Bodega 2</option>
@@ -119,10 +117,10 @@
       <button onclick="finIncidente()">Fin incidente</button>
       <button onclick="exportIncidentsCSV()" style="background:#111827;">Exportar CSV</button>
     </div>
-    <div class="flex-row" style="margin-top:8px;">
+    <div class="row">
       <strong>Tiempo total de paradas: <span id="statDowntime">0</span> min</strong>
-      <span style="margin-left:30px;">
-        Filtrar tiempo por motivo: 
+      <span>
+        Filtrar tiempo por motivo:
         <select id="filterReason" onchange="renderIncidents()">
           <option value="Todos">Todos</option>
           <option value="lluvia">Lluvia</option>
@@ -165,9 +163,9 @@
         <input type="file" id="sindImport" accept=".csv" onchange="importSindicatoCSV()" style="margin-top:6px;">
       </div>
     </div>
-    <div class="flex-row" style="margin-top:8px;">
+    <div class="row" style="margin-top:8px;">
       <strong>Total camiones: <span id="totalSindicato">0</span></strong>
-      <span class="muted" style="margin-left:20px;">
+      <span class="muted">
         Filtrar por estatus: 
         <select id="filtrarEstatus" onchange="renderSindicato()">
           <option value="Todos">Todos</option>
@@ -185,7 +183,6 @@
       <tbody></tbody>
     </table>
   </div>
-  <!-- DASHBOARD Y RESUMEN -->
   <div class="card">
     <strong>Dashboard y Resumen ejecutivo</strong>
     <div class="grid-2">
@@ -196,14 +193,13 @@
       <div><label>Tiempo total de operación hh:mm</label><div id="statOpTime"></div></div>
       <div><label>Número de paradas</label><div id="statIncCount">0</div></div>
     </div>
-    <div class="flex-row" style="margin-top:10px;">
+    <div class="controls" style="margin-top:10px;">
       <button onclick="renderDashboard()">Actualizar dashboard</button>
     </div>
   </div>
 </div>
 <footer class="muted" style="text-align:center;margin-top:20px;">Plantilla avanzada v2025.</footer>
 <script>
-// Variables de estado
 const DBKEY = 'trackingdescarga_git';
 let state = {header:{},prodManifestados:[],prodDescargados:[],incidents:[],sindicato:[]};
 window.onload = function(){const raw = localStorage.getItem(DBKEY);if(raw)state=JSON.parse(raw);renderAll();}
@@ -219,18 +215,68 @@ function saveHeader(){
   state.header = {vessel:v,nor:nor,eta:document.getElementById('eta').value,startOp:s,endOp:e,obs:document.getElementById('obsGeneral').value};
   saveState();alert('Ficha guardada');renderDashboard();
 }
-function renderAll(){if(state.header){document.getElementById('vessel').value = state.header.vessel || '';document.getElementById('nor').value = state.header.nor || '';document.getElementById('eta').value = state.header.eta || '';document.getElementById('startOp').value = state.header.startOp || '';document.getElementById('endOp').value = state.header.endOp || '';document.getElementById('obsGeneral').value = state.header.obs || '';}renderProductsManifest();renderProductsDownloaded();renderIncidents();renderSindicato();renderDashboard();}
-function addProductManifest(){const name=document.getElementById('prodNameM').value.trim();const manifest=parseFloat(document.getElementById('prodManifest').value||0);if(!name){alert('Producto es obligatorio');return;}if(manifest<=0){alert('Cantidad manifestada debe ser > 0');return;}const rec={id:Date.now(),name,manifest};state.prodManifestados.push(rec);saveState();renderProductsManifest();document.getElementById('prodNameM').value='';document.getElementById('prodManifest').value='';}
-function renderProductsManifest(){const tbody=document.querySelector('#prodMTable tbody');tbody.innerHTML='';state.prodManifestados.forEach((p,idx)=>{const descargado = state.prodDescargados.filter(d=>d.name===p.name).reduce((s,d)=>s+d.downloaded,0);const pendiente = (p.manifest-descargado).toFixed(2);const tr=document.createElement('tr');tr.innerHTML=`<td>${idx+1}</td><td>${p.name}</td><td>${p.manifest.toFixed(2)}</td><td>${pendiente}</td><td><button onclick="delProductManifest('${p.id}')">Eliminar</button></td>`;tbody.appendChild(tr);});document.getElementById('prodMCount').innerText=state.prodManifestados.length;}
+function renderAll(){
+  if(state.header){document.getElementById('vessel').value = state.header.vessel || '';document.getElementById('nor').value = state.header.nor || '';document.getElementById('eta').value = state.header.eta || '';document.getElementById('startOp').value = state.header.startOp || '';document.getElementById('endOp').value = state.header.endOp || '';document.getElementById('obsGeneral').value = state.header.obs || '';}renderProductsManifest();renderProductsDownloaded();renderIncidents();renderSindicato();renderDashboard();
+}
+function addProductManifest(){
+  const name=document.getElementById('prodNameM').value.trim();
+  const manifest=parseFloat(document.getElementById('prodManifest').value||0);
+  if(!name){alert('Producto es obligatorio');return;}
+  if(manifest<=0){alert('Cantidad manifestada debe ser > 0');return;}
+  const exists=state.prodManifestados.some(p=>p.name===name);
+  const rec={id:Date.now(),name,manifest};
+  state.prodManifestados.push(rec);saveState();renderProductsManifest();
+  document.getElementById('prodNameM').value='';document.getElementById('prodManifest').value='';
+}
+function renderProductsManifest(){
+  const tbody=document.querySelector('#prodMTable tbody');tbody.innerHTML='';
+  state.prodManifestados.forEach((p,idx)=>{
+    const descargado = state.prodDescargados.filter(d=>d.name===p.name).reduce((s,d)=>s+d.downloaded,0);
+    const pendiente = (p.manifest-descargado).toFixed(2);
+    const tr=document.createElement('tr');tr.innerHTML=`<td>${idx+1}</td><td>${p.name}</td><td>${p.manifest.toFixed(2)}</td><td>${pendiente}</td><td><button onclick="delProductManifest('${p.id}')">Eliminar</button></td>`;
+    tbody.appendChild(tr);
+  });
+  document.getElementById('prodMCount').innerText=state.prodManifestados.length;
+}
 function delProductManifest(id){state.prodManifestados=state.prodManifestados.filter(p=>p.id!=id);saveState();renderProductsManifest();}
-function exportProductsMCSV(){const rows=[["Producto","Manifestado (TM)"]];state.prodManifestados.forEach(p=>rows.push([p.name,p.manifest]));downloadCSV(rows,"manifestados.csv");}
-function addProductDownloaded(){const name=document.getElementById('prodNameD').value.trim();const downloaded=parseFloat(document.getElementById('prodDownloaded').value||0);if(!name){alert('Producto es obligatorio');return;}if(downloaded<=0){alert('Cantidad descargada inválida');return;}const rec={id:Date.now(),name,downloaded};state.prodDescargados.push(rec);saveState();renderProductsDownloaded();renderProductsManifest();renderDashboard();document.getElementById('prodNameD').value='';document.getElementById('prodDownloaded').value='';}
-function renderProductsDownloaded(){const tbody=document.querySelector('#prodDTable tbody');tbody.innerHTML='';state.prodDescargados.forEach((p,idx)=>{const tr=document.createElement('tr');tr.innerHTML=`<td>${idx+1}</td><td>${p.name}</td><td>${p.downloaded.toFixed(2)}</td><td><button onclick="delProductDownloaded('${p.id}')">Eliminar</button></td>`;tbody.appendChild(tr);});document.getElementById('prodDCount').innerText=state.prodDescargados.length;}
+function exportProductsMCSV(){
+  const rows=[["Producto","Manifestado (TM)"]];state.prodManifestados.forEach(p=>rows.push([p.name,p.manifest]));downloadCSV(rows,"manifestados.csv");
+}
+function addProductDownloaded(){
+  const name=document.getElementById('prodNameD').value.trim();
+  const downloaded=parseFloat(document.getElementById('prodDownloaded').value||0);
+  if(!name){alert('Producto es obligatorio');return;}
+  if(downloaded<=0){alert('Cantidad descargada inválida');return;}
+  const rec={id:Date.now(),name,downloaded};
+  state.prodDescargados.push(rec);saveState();renderProductsDownloaded();renderProductsManifest();renderDashboard();
+  document.getElementById('prodNameD').value='';document.getElementById('prodDownloaded').value='';
+}
+function renderProductsDownloaded(){
+  const tbody=document.querySelector('#prodDTable tbody');tbody.innerHTML='';
+  state.prodDescargados.forEach((p,idx)=>{
+    const tr=document.createElement('tr');tr.innerHTML=`<td>${idx+1}</td><td>${p.name}</td><td>${p.downloaded.toFixed(2)}</td><td><button onclick="delProductDownloaded('${p.id}')">Eliminar</button></td>`;
+    tbody.appendChild(tr);
+  });
+  document.getElementById('prodDCount').innerText=state.prodDescargados.length;
+}
 function delProductDownloaded(id){state.prodDescargados=state.prodDescargados.filter(p=>p.id!=id);saveState();renderProductsDownloaded();}
 let incidenteActivo = {id:null,start:null,reason:null,bodega:null};
 function inicioIncidente(){incidenteActivo = {id: Date.now(), start: new Date(), reason: document.getElementById('incReason').value, bodega: document.getElementById('incBodega').value};alert("Incidente iniciado: " + incidenteActivo.start.toLocaleString() + " Motivo: " + incidenteActivo.reason);}
 function finIncidente(){if(!incidenteActivo.start){alert("Debes iniciar primero el incidente.");return;}let fin = new Date();let minutos = Math.round((fin-incidenteActivo.start)/60000);state.incidents.push({id: incidenteActivo.id,start: incidenteActivo.start.toISOString(),end: fin.toISOString(),minutes: minutos,reason: incidenteActivo.reason,bodega: incidenteActivo.bodega});incidenteActivo = {id:null,start:null,reason:null,bodega:null};saveState();renderIncidents();renderDashboard();}
-function renderIncidents(){const tbody=document.querySelector('#incTable tbody');tbody.innerHTML='';let filter=document.getElementById('filterReason').value;let list=filter==="Todos"?state.incidents:state.incidents.filter(i=>i.reason===filter);let tiempoTotalMotivo=list.reduce((s,i)=>s+i.minutes,0);document.getElementById('statDowntimeFilter').innerText=tiempoTotalMotivo;state.incidents.forEach((it,idx)=>{const tr=document.createElement('tr');tr.innerHTML=`<td>${idx+1}</td><td>${new Date(it.start).toLocaleString()}</td><td>${new Date(it.end).toLocaleString()}</td><td>${it.minutes}</td><td>${it.reason}</td><td>${it.bodega}</td><td><button onclick="delIncident('${it.id}')">Eliminar</button></td>`;tbody.appendChild(tr);});let tiempoParadas=state.incidents.reduce((s,i)=>s+i.minutes,0);document.getElementById('statDowntime').innerText=tiempoParadas;}
+function renderIncidents(){
+  const tbody=document.querySelector('#incTable tbody');tbody.innerHTML='';
+  let filter=document.getElementById('filterReason').value;
+  let list=filter==="Todos"?state.incidents:state.incidents.filter(i=>i.reason===filter);
+  let tiempoTotalMotivo=list.reduce((s,i)=>s+i.minutes,0);
+  document.getElementById('statDowntimeFilter').innerText=tiempoTotalMotivo;
+  list.forEach((it,idx)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${idx+1}</td><td>${new Date(it.start).toLocaleString()}</td><td>${new Date(it.end).toLocaleString()}</td><td>${it.minutes}</td><td>${it.reason}</td><td>${it.bodega}</td><td><button onclick="delIncident('${it.id}')">Eliminar</button></td>`;
+    tbody.appendChild(tr);
+  });
+  let tiempoParadas=state.incidents.reduce((s,i)=>s+i.minutes,0);
+  document.getElementById('statDowntime').innerText=tiempoParadas;
+}
 function delIncident(id){state.incidents=state.incidents.filter(i=>i.id!=id);saveState();renderIncidents();renderDashboard();}
 function exportIncidentsCSV(){const rows=[["Inicio","Fin","Minutos","Motivo","Bodega"]];state.incidents.forEach(i=>rows.push([i.start,i.end,i.minutes,i.reason,i.bodega]));downloadCSV(rows,"incidentes.csv");}
 function addSindicato(){
@@ -240,6 +286,9 @@ function addSindicato(){
   const producto=document.getElementById('sindProducto').value.trim();
   const estatus=document.getElementById('sindEstatus').value;
   if(!ficha||!no){alert("Ficha y No.listado obligatorios");return;}
+  // Validación: no duplicar ficha en mismo listado
+  const existe=state.sindicato.some(x=>x.ficha===ficha && x.no===no);
+  if(existe){alert("Ya existe esa ficha en ese listado.");return;}
   state.sindicato.push({id:Date.now(),ficha,no,placa,producto,estatus});
   saveState();renderSindicato();
   document.getElementById('sindFicha').value='';document.getElementById('sindNo').value='';document.getElementById('sindPlaca').value='';document.getElementById('sindProducto').value='';
@@ -253,7 +302,11 @@ function importSindicatoCSV(){
       if(idx==0)return; // Salta cabecera
       const parts=line.split(',');
       if(parts.length>=5){
-        state.sindicato.push({id:Date.now(),ficha:parts[0],no:parts[1],placa:parts[2],producto:parts[3],estatus:parts[4]});
+        // Validación en importación: ficha+listado única
+        const ficha=parts[0],no=parts[1],existe=state.sindicato.some(x=>x.ficha===ficha && x.no===no);
+        if(!existe){
+          state.sindicato.push({id:Date.now(),ficha:parts[0],no:parts[1],placa:parts[2],producto:parts[3],estatus:parts[4]});
+        }
       }
     });saveState();renderSindicato();
   };reader.readAsText(input.files[0]);
