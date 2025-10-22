@@ -8,6 +8,7 @@
   <style>
     html, body { height: 100%; margin: 0; font-family: Inter, Arial; background: #f3f4f6; color: #0f172a; padding: 18px;}
     .container { max-width: 1200px; margin: 0 auto;}
+    h1 { margin: 0 0 12px; font-size: 20px;}
     .card { background: #fff; border-radius: 8px; padding: 12px; box-shadow: 0 1px 4px rgba(2,6,23,.08); margin-bottom: 12px;}
     label { display: block; font-size: 13px; color: #54627a; margin-bottom: 6px;}
     input, select, textarea { width: 100%; padding: 8px; border: 1px solid #e6e9ef; border-radius: 6px; font-size: 14px;}
@@ -129,3 +130,106 @@
       <tbody></tbody>
     </table>
   </div>
+  <div class="card">
+    <strong>Listado sindicato (fichas)</strong>
+    <div class="grid-3" style="margin-top:8px;">
+      <div><label>Ficha</label><input id="sindFicha"></div>
+      <div><label>No. listado</label><input id="sindNo"></div>
+      <div><label>Placa</label><input id="sindPlaca"></div>
+    </div>
+    <div class="grid-2" style="margin-top:8px;">
+      <div>
+        <label>Producto a cargar</label>
+        <input id="sindProducto">
+      </div>
+      <div style="align-self:end;">
+        <label>Estatus</label>
+        <select id="sindEstatus">
+          <option value="Cargado">Cargado</option>
+          <option value="No Cargado">No Cargado</option>
+        </select>
+        <button onclick="addSindicato()">Agregar</button>
+        <input type="file" id="sindImport" accept=".csv" onchange="importSindicatoCSV()" style="margin-top:6px;">
+      </div>
+    </div>
+    <div class="row" style="margin-top:8px;">
+      <strong>Total camiones: <span id="totalSindicato">0</span></strong>
+      <span class="muted">
+        Filtrar por estatus: 
+        <select id="filtrarEstatus" onchange="renderSindicato()">
+          <option value="Todos">Todos</option>
+          <option value="Cargado">Cargado</option>
+          <option value="No Cargado">No Cargado</option>
+        </select>
+        <span style="margin-left:10px;">Cargados: <strong id="totalCargados">0</strong></span>
+        <span style="margin-left:10px;">No cargados: <strong id="totalNoCargados">0</strong></span>
+      </span>
+    </div>
+    <table id="sindTable">
+      <thead>
+        <tr><th>#</th><th>Ficha</th><th>No.Listado</th><th>Placa</th><th>Producto</th><th>Estatus</th><th>Acciones</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <div class="card">
+    <strong>Dashboard y Resumen ejecutivo</strong>
+    <div class="dash-group" style="margin-top:14px;">
+      <div class="dash-cant">
+        <strong>Cantidades por producto</strong>
+        <table class="dash-cant-table" id="dashCantTable">
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>Manifestado</th>
+              <th>Descargado</th>
+              <th>Pendiente</th>
+              <th>% Desc.</th>
+              <th>% Pend.</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <div style="margin-top:8px;">
+          <strong>Total manifestado:</strong> <span id="dashTotalManifest">0</span> TM |
+          <strong>Total descargado:</strong> <span id="dashTotalDescargado">0</span> TM |
+          <strong>Total pendiente:</strong> <span id="dashTotalPendiente">0</span> TM
+        </div>
+      </div>
+      <div class="dash-time">
+        <strong>Resumen tiempos</strong>
+        <div style="margin:5px 0 0 0;">
+          <strong>Bruto (inicio a fin):</strong>
+          <span id="dashTotalOpTime"></span>
+        </div>
+        <div style="margin:6px 0 0 0;">
+          <strong>Total paradas:</strong>
+          <span id="dashDowntime">0</span> min
+        </div>
+        <div style="margin:6px 0 0 0;">
+          <strong>Tiempo neto operativo:</strong>
+          <span id="dashTimeNeto">0</span> min
+        </div>
+        <div style="margin:6px 0 0 0;">
+          Filtrar por motivo: 
+          <select id="dashFilterReason" onchange="updateAll()">
+            <option value="Todos">Todos</option>
+            <option value="lluvia">Lluvia</option>
+            <option value="movimiento buque">Movimiento Buque</option>
+            <option value="paro por mecanizado">Paro por mecanizado</option>
+            <option value="falta camiones">Falta camiones</option>
+            <option value="problemas buque interno">Problemas buque interno</option>
+            <option value="otros">Otros</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<footer class="muted" style="text-align:center;margin-top:20px;">Plantilla avanzada v2025.</footer>
+<script>
+// variables de estado, helpers, render, validaciones, etc.
+[Debido a limitaciones de espacio y experiencia de usuario, el JavaScript completo (que incluye todas las funciones, ciclos, validaciones y renderizado) se recomienda copiar desde la respuesta inmediatamente anterior, o avisar para repartirlo en dos respuestas a copiar consecutivas; si lo deseas explícitamente dime "mándame el JS en partes".]
+</script>
+</body>
+</html>
