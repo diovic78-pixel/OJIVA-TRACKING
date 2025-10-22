@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Tracking Operación de Descarga - Plantilla Completa</title>
+<style>
+  body { font-family: Arial, sans-serif; background: #f3f4f6; padding: 20px; }
+  .container { max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 6px; }
+  label { display: block; margin-top: 10px; }
+  input[type=text], input[type=number], textarea, select { width: 100%; padding: 8px; margin-top: 4px; }
+  button { margin-top: 12px; padding: 10px 20px; background: #0d6efd; color: white; border: none; cursor: pointer; }
+  button:disabled { background: #aaa; cursor: default; }
+  #loginContainer { max-width: 300px; margin: auto; background: white; padding: 20px; border-radius: 6px;}
+  h2 { margin-bottom: 12px; }
+  table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+  th, td { border: 1px solid #ccc; padding: 6px; text-align: left; font-size: 14px; }
+  th { background: #eee; }
+  .seccion { margin-top: 40px; }
+</style>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+</head>
+<body>
+
+<div id="loginContainer">
+  <h2>Por favor, inicia sesión</h2>
+  <label>Usuario:</label>
+  <input type="text" id="username" />
+  <label>Contraseña:</label>
+  <input type="password" id="password" />
+  <button onclick="login()">Entrar</button>
+  <p id="loginError" style="color:red;"></p>
+</div>
+
+<div class="container" id="mainContainer" style="display:none;">
+  <h1>Tracking Operación de Descarga</h1>
+
+  <!-- Sección Productos -->
+  <div class="seccion" id="productosSection">
+    <h2>Productos</h2>    
+    <label>Producto:</label>
+    <input type="text" id="producto" placeholder="Ejemplo: Maíz" />
+    <label>Cantidad manifestada (TM):</label>
+    <input type="number" step="0.01" id="cantidadManifestada" />
+    <label>Cantidad descargada (TM):</label>
+    <input type="number" step="0.01" id="cantidadDescargada" />
+    <button onclick="agregarProducto()">Agregar Producto</button>
+
+    <h3>Lista de Productos</h3>
+    <table id="tablaProductos">
+      <thead>
+        <tr><th>Producto</th><th>Manifestada (TM)</th><th>Descargada (TM)</th><th>Acciones</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <button onclick="exportarCSV('productos')">Exportar Productos a CSV</button>
+  </div>
+
+  <!-- Sección Incidentes -->
+  <div class="seccion" id="incidentesSection">
+    <h2>Incidentes</h2>
+    <label>Descripción del incidente:</label>
+    <textarea id="descIncidente" placeholder="Describe el incidente"></textarea>
+    <label>Fecha (YYYY-MM-DD):</label>
+    <input type="text" id="fechaIncidente" placeholder="2025-10-21" />
+    <button onclick="agregarIncidente()">Agregar Incidente</button>
+
+    <h3>Lista de Incidentes</h3>
+    <table id="tablaIncidentes">
+      <thead>
+        <tr><th>Descripción</th><th>Fecha</th><th>Acciones</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <button onclick="exportarCSV('incidentes')">Exportar Incidentes a CSV</button>
+  </div>
+
+  <!-- Sección Sindicato -->
+  <div class="seccion" id="sindicatoSection">
+    <h2>Sindicato</h2>
+    <label>Nombre del representante:</label>
+    <input type="text" id="nombreRepresentante" placeholder="Nombre completo" />
+    <label>Teléfono:</label>
+    <input type="text" id="telefonoRepresentante" placeholder="Ejemplo: +123456789" />
+    <label>Observaciones:</label>
+    <textarea id="observacionesSindicato" placeholder="Observaciones"></textarea>
+    <button onclick="agregarSindicato()">Agregar Representante</button>
+
+    <h3>Lista de Representantes</h3>
+    <table id="tablaSindicato">
+      <thead>
+        <tr><th>Nombre</th><th>Teléfono</th><th>Observaciones</th><th>Acciones</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <button onclick="exportarCSV('sindicato')">Exportar Sindicato a CSV</button>
+  </div>
+
+  <!-- Sección Camiones -->
+  <div class="seccion" id="camionesSection">
+    <h2>Camiones</h2>
+    <label>Placa:</label>
+    <input type="text" id="placaCamion" placeholder="Ejemplo: ABC-123" />
+    <label>Transportista:</label>
+    <input type="text" id="transportistaCamion" placeholder="Nombre transportista" />
+    <label>Estado de descarga:</label>
+    <select id="estadoDescarga">
+      <option value="Pendiente">Pendiente</option>
+      <option value="En Proceso">En Proceso</option>
+      <option value="Completado">Completado</option>
+    </select>
+    <button onclick="agregarCamion()">Agregar Camión</button>
+
+    <h3>Lista de Camiones</h3>
+    <table id="tablaCamiones">
+      <thead>
+        <tr><th>Placa</th><th>Transportista</th><th>Estado Descarga</th><th>Acciones</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <button onclick="exportarCSV('camiones')">Exportar Camiones a CSV</button>
+  </div>
+
+</div>
+
+<script>
+// Configuración Firebase, reemplaza con tu configuración
+const firebaseConfig = {
+  apiKey: "AIzaSyAwShXPHkWozpPxsSwgexcrj7dOU5SATME",
+  authDomain: "tracking-vessel.firebaseapp.com",
+  databaseURL: "https://tracking-vessel-default-rtdb.firebaseio.com",
+  projectId: "tracking-vessel",
+  storageBucket: "tracking-vessel.firebasestorage.app",
+  messagingSenderId: "604705070167",
+  appId: "1:604705070167:web:ee143be8fb525388a01712",
+  measurementId: "G-Y196D8N09M"
+};
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
+
+let productos = [];
+let incidentes = [];
+let sindicato = [];
+let camiones = [];
+
+// --- AUTENTICACIÓN ---
+function login() {
+  const user = document.getElementById("username").value.trim();
+  const pass = document.getElementById("password").value.trim();
+  if(user === "invitado" && pass === "1234") {
+    document.getElementById("loginContainer").style.display = "none";
+    document.getElementById("mainContainer").style.display = "block";
+    cargarTodos();
+  } else {
+    document.getElementById("loginError").textContent = "Usuario o contraseña incorrectos";
+  }
+}
+
+function cargarTodos() {
+  cargarProductos();
+  cargarIncidentes();
+  cargarSindicato();
+  cargarCamiones();
+}
+
+// --- PRODUCTOS ---
+function agregarProducto() {
+  const producto = document.getElementById("producto").value.trim();
+  const cantidadManifestada = parseFloat(document.getElementById("cantidadManifestada").value);
+  const cantidadDescargada = parseFloat(document.getElementById("cantidadDescargada").value);
+  if(!producto || isNaN(cantidadManifestada) || isNaN(cantidadDescargada)) {
+    alert("Completa todos los campos del producto correctamente.");
+    return;
+  }
+  const id = Date.now().toString();
+  const nuevo = { id, producto, cantidadManifestada, cantidadDescargada };
+  database.ref('productos/' + id).set(nuevo);
+  limpiarCamposProducto();
+}
+
+function cargarProductos() {
+  database.ref('productos').on('value', snapshot => {
+    productos = [];
+    snapshot.forEach(child => productos.push(child.val()));
+    renderizarProductos();
+  });
+}
+
+function renderizarProductos() {
+  const tbody = document.querySelector("#tablaProductos tbody");
+  tbody.innerHTML = "";
+  productos.forEach(p => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${p.producto}</td><td>${p.cantidadManifestada.toFixed(2)}</td><td>${p.cantidadDescargada.toFixed(2)}</td><td><button onclick="eliminarProducto('${p.id}')">Eliminar</button></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function eliminarProducto(id) {
+  if(confirm("¿Eliminar producto?")) {
+    database.ref('productos/' + id).remove();
+  }
+}
+function limpiarCamposProducto() {
+  document.getElementById("producto").value = "";
+  document.getElementById("cantidadManifestada").value = "";
+  document.getElementById("cantidadDescargada").value = "";
+}
+
+// --- INCIDENTES ---
+function agregarIncidente() {
+  const descripcion = document.getElementById("descIncidente").value.trim();
+  const fecha = document.getElementById("fechaIncidente").value.trim();
+  if(!descripcion || !fecha) {
+    alert("Completa todos los campos del incidente correctamente.");
+    return;
+  }
+  const id = Date.now().toString();
+  const nuevo = { id, descripcion, fecha };
+  database.ref('incidentes/' + id).set(nuevo);
+  limpiarCamposIncidente();
+}
+
+function cargarIncidentes() {
+  database.ref('incidentes').on('value', snapshot => {
+    incidentes = [];
+    snapshot.forEach(child => incidentes.push(child.val()));
+    renderizarIncidentes();
+  });
+}
+
+function renderizarIncidentes() {
+  const tbody = document.querySelector("#tablaIncidentes tbody");
+  tbody.innerHTML = "";
+  incidentes.forEach(i => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${i.descripcion}</td><td>${i.fecha}</td><td><button onclick="eliminarIncidente('${i.id}')">Eliminar</button></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function eliminarIncidente(id) {
+  if(confirm("¿Eliminar incidente?")) {
+    database.ref('incidentes/' + id).remove();
+  }
+}
+
+function limpiarCamposIncidente() {
+  document.getElementById("descIncidente").value = "";
+  document.getElementById("fechaIncidente").value = "";
+}
+
+// --- SINDICATO ---
+function agregarSindicato() {
+  const nombre = document.getElementById("nombreRepresentante").value.trim();
+  const telefono = document.getElementById("telefonoRepresentante").value.trim();
+  const observaciones = document.getElementById("observacionesSindicato").value.trim();
+  if(!nombre || !telefono) {
+    alert("Completa todos los campos del representante.");
+    return;
+  }
+  const id = Date.now().toString();
+  const nuevo = { id, nombre, telefono, observaciones };
+  database.ref('sindicato/' + id).set(nuevo);
+  limpiarCamposSindicato();
+}
+
+function cargarSindicato() {
+  database.ref('sindicato').on('value', snapshot => {
+    sindicato = [];
+    snapshot.forEach(child => sindicato.push(child.val()));
+    renderizarSindicato();
+  });
+}
+
+function renderizarSindicato() {
+  const tbody = document.querySelector("#tablaSindicato tbody");
+  tbody.innerHTML = "";
+  sindicato.forEach(s => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${s.nombre}</td><td>${s.telefono}</td><td>${s.observaciones}</td><td><button onclick="eliminarSindicato('${s.id}')">Eliminar</button></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function eliminarSindicato(id) {
+  if(confirm("¿Eliminar representante?")) {
+    database.ref('sindicato/' + id).remove();
+  }
+}
+
+function limpiarCamposSindicato() {
+  document.getElementById("nombreRepresentante").value = "";
+  document.getElementById("telefonoRepresentante").value = "";
+  document.getElementById("observacionesSindicato").value = "";
+}
+
+// --- CAMIONES ---
+function agregarCamion() {
+  const placa = document.getElementById("placaCamion").value.trim();
+  const transportista = document.getElementById("transportistaCamion").value.trim();
+  const estado = document.getElementById("estadoDescarga").value;
+  if(!placa || !transportista) {
+    alert("Completa todos los campos del camión.");
+    return;
+  }
+  const id = Date.now().toString();
+  const nuevo = { id, placa, transportista, estado };
+  database.ref('camiones/' + id).set(nuevo);
+  limpiarCamposCamion();
+}
+
+function cargarCamiones() {
+  database.ref('camiones').on('value', snapshot => {
+    camiones = [];
+    snapshot.forEach(child => camiones.push(child.val()));
+    renderizarCamiones();
+  });
+}
+
+function renderizarCamiones() {
+  const tbody = document.querySelector("#tablaCamiones tbody");
+  tbody.innerHTML = "";
+  camiones.forEach(c => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${c.placa}</td><td>${c.transportista}</td><td>${c.estado}</td><td><button onclick="eliminarCamion('${c.id}')">Eliminar</button></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function eliminarCamion(id) {
+  if(confirm("¿Eliminar camión?")) {
+    database.ref('camiones/' + id).remove();
+  }
+}
+
+function limpiarCamposCamion() {
+  document.getElementById("placaCamion").value = "";
+  document.getElementById("transportistaCamion").value = "";
+  document.getElementById("estadoDescarga").value = "Pendiente";
+}
+
+// --- EXPORTAR CSV ---
+function exportarCSV(tipo) {
+  let data = [];
+  let nombreArchivo = "";
+  if(tipo === "productos") {
+    if(productos.length === 0) {
+      alert("No hay productos para exportar.");
+      return;
+    }
+    nombreArchivo = "productos.csv";
+    data.push(["Producto","Cantidad Manifestada (TM)","Cantidad Descargada (TM)"]);
+    productos.forEach(p => data.push([p.producto,p.cantidadManifestada,p.cantidadDescargada]));
+  } else if(tipo === "incidentes") {
+    if(incidentes.length === 0) {
+      alert("No hay incidentes para exportar.");
+      return;
+    }
+    nombreArchivo = "incidentes.csv";
+    data.push(["Descripción","Fecha"]);
+    incidentes.forEach(i => data.push([i.descripcion,i.fecha]));
+  } else if(tipo === "sindicato") {
+    if(sindicato.length === 0) {
+      alert("No hay representantes para exportar.");
+      return;
+    }
+    nombreArchivo = "sindicato.csv";
+    data.push(["Nombre","Teléfono","Observaciones"]);
+    sindicato.forEach(s => data.push([s.nombre,s.telefono,s.observaciones]));
+  } else if(tipo === "camiones") {
+    if(camiones.length === 0) {
+      alert("No hay camiones para exportar.");
+      return;
+    }
+    nombreArchivo = "camiones.csv";
+    data.push(["Placa","Transportista","Estado Descarga"]);
+    camiones.forEach(c => data.push([c.placa,c.transportista,c.estado]));
+  } else {
+    alert("Tipo de exportación no reconocido.");
+    return;
+  }
+
+  let csv = "";
+  data.forEach(row => {
+    csv += row.map(field => `"${field}"`).join(",") + "\n";
+  });
+  const blob = new Blob([csv], { type: "text/csv" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = nombreArchivo;
+  a.click();
+}
+</script>
+
+</body>
+</html>
